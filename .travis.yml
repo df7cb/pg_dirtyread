@@ -27,7 +27,7 @@ before_install:
 install:
   - export DEBIAN_FRONTEND=noninteractive # suppress warnings about deprecated PostgreSQL versions
   # trusty's pg_buildext doesn't cope with PG version numbers >= 10, so upgrade that to -pgdg
-  - sudo apt-get install bison debhelper devscripts fakeroot flex postgresql-server-dev-$PG_SUPPORTED_VERSIONS postgresql-server-dev-all/$DIST
+  - sudo apt-get install debhelper devscripts fakeroot postgresql-server-dev-$PG_SUPPORTED_VERSIONS postgresql-server-dev-all/$DIST
   # install PostgreSQL $PG_SUPPORTED_VERSIONS if not there yet
   - |
     if [ ! -x /usr/lib/postgresql/$PG_SUPPORTED_VERSIONS/bin/postgres ]; then
