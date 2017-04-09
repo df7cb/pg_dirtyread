@@ -65,20 +65,20 @@ pg_dirtyread(PG_FUNCTION_ARGS)
     {
         relid = PG_GETARG_OID(0);
 
-        if (OidIsValid(relid))
-        {
-            funcctx = SRF_FIRSTCALL_INIT();
-            oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-            usr_ctx = (pg_dirtyread_ctx *) palloc(sizeof(pg_dirtyread_ctx));
-            usr_ctx->rel = heap_open(relid, AccessShareLock);
-            usr_ctx->reltupdesc = RelationGetDescr(usr_ctx->rel);
-            get_call_result_type(fcinfo, NULL, &tupdesc);
-            funcctx->tuple_desc = BlessTupleDesc(tupdesc);
-            usr_ctx->map = convert_tuples_by_position(usr_ctx->reltupdesc, funcctx->tuple_desc, "Error converting tuple descriptors!");
-            usr_ctx->scan = heap_beginscan(usr_ctx->rel, SnapshotAny, 0, NULL);
-            funcctx->user_fctx = (void *) usr_ctx;
-            MemoryContextSwitchTo(oldcontext);
-        }
+        if (!OidIsValid(relid))
+            elog(ERROR, "invalid relation oid \"%d\"", relid);
+
+        funcctx = SRF_FIRSTCALL_INIT();
+        oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+        usr_ctx = (pg_dirtyread_ctx *) palloc(sizeof(pg_dirtyread_ctx));
+        usr_ctx->rel = heap_open(relid, AccessShareLock);
+        usr_ctx->reltupdesc = RelationGetDescr(usr_ctx->rel);
+        get_call_result_type(fcinfo, NULL, &tupdesc);
+        funcctx->tuple_desc = BlessTupleDesc(tupdesc);
+        usr_ctx->map = convert_tuples_by_position(usr_ctx->reltupdesc, funcctx->tuple_desc, "Error converting tuple descriptors!");
+        usr_ctx->scan = heap_beginscan(usr_ctx->rel, SnapshotAny, 0, NULL);
+        funcctx->user_fctx = (void *) usr_ctx;
+        MemoryContextSwitchTo(oldcontext);
     }
 
     funcctx = SRF_PERCALL_SETUP();
