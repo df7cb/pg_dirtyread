@@ -1,0 +1,29 @@
+-- Create table and disable autovacuum
+CREATE TABLE foo (bar bigint, baz text);
+ALTER TABLE foo SET (
+  autovacuum_enabled = false, toast.autovacuum_enabled = false
+);
+INSERT INTO foo VALUES (1, 'Test'), (2, 'New Test');
+DELETE FROM foo WHERE bar = 1;
+SELECT * FROM foo;
+ bar |   baz    
+-----+----------
+   2 | New Test
+(1 row)
+
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar bigint, baz text);
+ bar |   baz    
+-----+----------
+   1 | Test
+   2 | New Test
+(2 rows)
+
+-- error cases
+SELECT * FROM pg_dirtyread(0) as t(bar bigint, baz text);
+ERROR:  invalid relation oid "0"
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar int, baz text);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Returned type bigint does not match expected type integer in column 1.
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar bigint);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Number of returned columns (2) does not match expected column count (1).
