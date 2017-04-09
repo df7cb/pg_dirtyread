@@ -1,0 +1,4 @@
+CREATE FUNCTION pg_dirtyread(oid)
+RETURNS setof record
+AS 'MODULE_PATHNAME'
+LANGUAGE C;
