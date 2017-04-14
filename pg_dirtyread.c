@@ -37,7 +37,9 @@
 #include "utils/rel.h"
 #include "catalog/pg_type.h"
 #include "access/tupconvert.h"
+#if PG_VERSION_NUM >= 90300
 #include "access/htup_details.h"
+#endif
 
 typedef struct
 {
