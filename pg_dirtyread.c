@@ -37,6 +37,7 @@
 #include "utils/rel.h"
 #include "catalog/pg_type.h"
 #include "access/tupconvert.h"
+#include "access/htup_details.h"
 
 typedef struct
 {
@@ -58,7 +59,7 @@ pg_dirtyread(PG_FUNCTION_ARGS)
     MemoryContext       oldcontext;
     pg_dirtyread_ctx    *usr_ctx;
     Oid                 relid;
-    HeapTuple           tuplein, tupleout;
+    HeapTuple           tuplein;
     TupleDesc           tupdesc;
 
     if (SRF_IS_FIRSTCALL())
@@ -86,8 +87,13 @@ pg_dirtyread(PG_FUNCTION_ARGS)
 
     if ((tuplein = heap_getnext(usr_ctx->scan, ForwardScanDirection)) != NULL)
     {
-        tupleout = do_convert_tuple(tuplein, usr_ctx->map);
-        SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tupleout));
+        if (usr_ctx->map != NULL)
+        {
+            tuplein = do_convert_tuple(tuplein, usr_ctx->map);
+            SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tuplein));
+        }
+        else
+            SRF_RETURN_NEXT(funcctx, heap_copy_tuple_as_datum(tuplein, usr_ctx->reltupdesc));
     }
     else
     {
