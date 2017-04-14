@@ -4,10 +4,18 @@ ALTER TABLE foo SET (
   autovacuum_enabled = false, toast.autovacuum_enabled = false
 );
 
-INSERT INTO foo VALUES (1, 'Test'), (2, 'New Test');
-DELETE FROM foo WHERE bar = 1;
+-- single row
+INSERT INTO foo VALUES (1, 'Hello world');
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar bigint, baz text);
+DELETE FROM foo;
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar bigint, baz text);
 
-SELECT * FROM foo;
+VACUUM foo;
+
+-- multiple rows
+INSERT INTO foo VALUES (1, 'Delete'), (2, 'Insert'), (3, 'Update');
+DELETE FROM foo WHERE bar = 1;
+UPDATE foo SET baz = 'Updated' WHERE bar = 3;
 SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar bigint, baz text);
 
 -- error cases
