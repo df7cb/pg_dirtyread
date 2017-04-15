@@ -1,3 +1,5 @@
 regression.diffs
 regression.out
 results/
+*.o
+*.so

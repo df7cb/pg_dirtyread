@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2012, OmniTI Computer Consulting, Inc.
+ * Portions Copyright (c) 1996-2017, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1994, The Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +43,8 @@
 #include "access/htup_details.h"
 #endif
 
+#include "dirtyread_tupconvert.h"
+
 typedef struct
 {
     Relation            rel;
@@ -78,7 +82,7 @@ pg_dirtyread(PG_FUNCTION_ARGS)
         usr_ctx->reltupdesc = RelationGetDescr(usr_ctx->rel);
         get_call_result_type(fcinfo, NULL, &tupdesc);
         funcctx->tuple_desc = BlessTupleDesc(tupdesc);
-        usr_ctx->map = convert_tuples_by_position(usr_ctx->reltupdesc, funcctx->tuple_desc, "Error converting tuple descriptors!");
+        usr_ctx->map = dirtyread_convert_tuples_by_name(usr_ctx->reltupdesc, funcctx->tuple_desc, "Error converting tuple descriptors!");
         usr_ctx->scan = heap_beginscan(usr_ctx->rel, SnapshotAny, 0, NULL);
         funcctx->user_fctx = (void *) usr_ctx;
         MemoryContextSwitchTo(oldcontext);
@@ -91,7 +95,7 @@ pg_dirtyread(PG_FUNCTION_ARGS)
     {
         if (usr_ctx->map != NULL)
         {
-            tuplein = do_convert_tuple(tuplein, usr_ctx->map);
+            tuplein = dirtyread_do_convert_tuple(tuplein, usr_ctx->map);
             SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tuplein));
         }
         else

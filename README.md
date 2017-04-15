@@ -25,17 +25,24 @@ to find it:
 
     env PG_CONFIG=/path/to/pg_config make && make install
 
-Loading
+Loading and Using
 -------
 
 Once pg_dirtyread is built and installed, you can add it to a database. Loading
 pg_dirtyread is as simple as connecting to a database as a super user and
 running:
 
+  ```sql
     CREATE EXTENSION pg_dirtyread;
+    SELECT * FROM pg_dirtyread('tablename'::regclass) AS t(col1 type1, col2 type2, ...);
+  ```
 
-Using
------
+The `pg_dirtyread()` function returns RECORD, therefore it is necessary to
+attach a table alias clause that describes the table schema. Columns are
+matched by name, so it is possible to omit some columns in the alias, or
+rearrange columns.
+
+Example:
 
   ```sql
     CREATE EXTENSION pg_dirtyread;
@@ -54,10 +61,33 @@ Using
 
 Where the schema of `foo` is `(bar bigint, baz text)`.
 
+System Columns
+--------------
+
+System columns such as `xmax` and `ctid` can be retrieved by including them in
+the table alias attached to the `pg_dirtyread()` call:
+
+  ```sql
+    SELECT * FROM pg_dirtyread('foo'::regclass)
+        AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, oid oid, bar bigint, baz text);
+     tableoid | ctid  | xmin | xmax | cmin | cmax | oid | bar |        baz
+    ----------+-------+------+------+------+------+-----+-----+-------------------
+        41823 | (0,1) | 1484 | 1485 |    0 |    0 |   0 |   1 | Delete
+        41823 | (0,2) | 1484 |    0 |    0 |    0 |   0 |   2 | Insert
+        41823 | (0,3) | 1484 | 1486 |    0 |    0 |   0 |   3 | Update
+        41823 | (0,4) | 1484 | 1488 |    0 |    0 |   0 |   4 | Not deleted
+        41823 | (0,5) | 1484 | 1489 |    1 |    1 |   0 |   5 | Not updated
+        41823 | (0,6) | 1486 |    0 |    0 |    0 |   0 |   3 | Updated
+        41823 | (0,7) | 1489 |    0 |    1 |    1 |   0 |   5 | Not quite updated
+        41823 | (0,8) | 1490 |    0 |    2 |    2 |   0 |   6 | Not inserted
+  ```
+
 License
 -------
 
 Copyright (c) 2012, OmniTI Computer Consulting, Inc.
+Portions Copyright (c) 1996-2017, PostgreSQL Global Development Group
+Portions Copyright (c) 1994, The Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

@@ -20,24 +20,62 @@ SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar bigint, baz text);
 
 VACUUM foo;
 -- multiple rows
-INSERT INTO foo VALUES (1, 'Delete'), (2, 'Insert'), (3, 'Update');
+INSERT INTO foo VALUES (1, 'Delete'), (2, 'Insert'), (3, 'Update'), (4, 'Not deleted'), (5, 'Not updated');
 DELETE FROM foo WHERE bar = 1;
 UPDATE foo SET baz = 'Updated' WHERE bar = 3;
+BEGIN;
+	DELETE FROM foo WHERE bar = 4;
+	UPDATE foo SET baz = 'Not quite updated' where bar = 5;
+	INSERT INTO foo VALUES (6, 'Not inserted');
+ROLLBACK;
+SELECT * FROM foo;
+ bar |     baz     
+-----+-------------
+   2 | Insert
+   4 | Not deleted
+   5 | Not updated
+   3 | Updated
+(4 rows)
+
 SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar bigint, baz text);
- bar |   baz   
------+---------
+ bar |        baz        
+-----+-------------------
    1 | Delete
    2 | Insert
    3 | Update
+   4 | Not deleted
+   5 | Not updated
    3 | Updated
-(4 rows)
+   5 | Not quite updated
+   6 | Not inserted
+(8 rows)
+
+-- system columns (don't show tableoid and xmin, but make sure they are numbers)
+SELECT CASE WHEN tableoid >= 0 THEN 0 END AS tableoid,
+	ctid,
+	CASE WHEN xmin::text::int >= 0 THEN 0 END AS xmin,
+	CASE WHEN xmax::text <> '0' THEN xmax::text::int - xmin::text::int END AS xmax,
+	cmin, cmax, oid, bar, baz
+	FROM pg_dirtyread('foo'::regclass)
+	AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, oid oid, bar bigint, baz text);
+ tableoid | ctid  | xmin | xmax | cmin | cmax | oid | bar |        baz        
+----------+-------+------+------+------+------+-----+-----+-------------------
+        0 | (0,1) |    0 |    1 |    0 |    0 |   0 |   1 | Delete
+        0 | (0,2) |    0 |      |    0 |    0 |   0 |   2 | Insert
+        0 | (0,3) |    0 |    2 |    0 |    0 |   0 |   3 | Update
+        0 | (0,4) |    0 |    3 |    0 |    0 |   0 |   4 | Not deleted
+        0 | (0,5) |    0 |    3 |    1 |    1 |   0 |   5 | Not updated
+        0 | (0,6) |    0 |      |    0 |    0 |   0 |   3 | Updated
+        0 | (0,7) |    0 |      |    1 |    1 |   0 |   5 | Not quite updated
+        0 | (0,8) |    0 |      |    2 |    2 |   0 |   6 | Not inserted
+(8 rows)
 
 -- error cases
 SELECT * FROM pg_dirtyread(0) as t(bar bigint, baz text);
 ERROR:  invalid relation oid "0"
 SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar int, baz text);
 ERROR:  Error converting tuple descriptors!
-DETAIL:  Returned type bigint does not match expected type integer in column 1.
-SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar bigint);
+DETAIL:  Attribute "bar" of type record does not match corresponding attribute of type foo.
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(moo bigint);
 ERROR:  Error converting tuple descriptors!
-DETAIL:  Number of returned columns (2) does not match expected column count (1).
+DETAIL:  Attribute "moo" of type record does not exist in type foo.
