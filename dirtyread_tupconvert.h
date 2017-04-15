@@ -24,6 +24,8 @@ extern AttrNumber *dirtyread_convert_tuples_by_name_map(TupleDesc indesc,
 						   TupleDesc outdesc,
 						   const char *msg);
 
-extern HeapTuple dirtyread_do_convert_tuple(HeapTuple tuple, TupleConversionMap *map);
+extern HeapTuple dirtyread_do_convert_tuple(HeapTuple tuple, TupleConversionMap *map, TransactionId oldest_xmin);
+
+#define DeadFakeAttributeNumber FirstLowInvalidHeapAttributeNumber
 
 #endif   /* DIRTYREAD_TUPCONVERT_H */

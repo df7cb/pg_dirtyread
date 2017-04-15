@@ -65,21 +65,22 @@ System Columns
 --------------
 
 System columns such as `xmax` and `ctid` can be retrieved by including them in
-the table alias attached to the `pg_dirtyread()` call:
+the table alias attached to the `pg_dirtyread()` call. A special column `dead` of
+type boolean is available to report dead rows (as by `HeapTupleIsSurelyDead`).
 
   ```sql
     SELECT * FROM pg_dirtyread('foo'::regclass)
-        AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, oid oid, bar bigint, baz text);
-     tableoid | ctid  | xmin | xmax | cmin | cmax | oid | bar |        baz
-    ----------+-------+------+------+------+------+-----+-----+-------------------
-        41823 | (0,1) | 1484 | 1485 |    0 |    0 |   0 |   1 | Delete
-        41823 | (0,2) | 1484 |    0 |    0 |    0 |   0 |   2 | Insert
-        41823 | (0,3) | 1484 | 1486 |    0 |    0 |   0 |   3 | Update
-        41823 | (0,4) | 1484 | 1488 |    0 |    0 |   0 |   4 | Not deleted
-        41823 | (0,5) | 1484 | 1489 |    1 |    1 |   0 |   5 | Not updated
-        41823 | (0,6) | 1486 |    0 |    0 |    0 |   0 |   3 | Updated
-        41823 | (0,7) | 1489 |    0 |    1 |    1 |   0 |   5 | Not quite updated
-        41823 | (0,8) | 1490 |    0 |    2 |    2 |   0 |   6 | Not inserted
+        AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean, oid oid, bar bigint, baz text);
+     tableoid │ ctid  │ xmin │ xmax │ cmin │ cmax │ dead │ oid │ bar │        baz
+    ──────────┼───────┼──────┼──────┼──────┼──────┼──────┼─────┼─────┼───────────────────
+        41823 │ (0,1) │ 1484 │ 1485 │    0 │    0 │ t    │   0 │   1 │ Delete
+        41823 │ (0,2) │ 1484 │    0 │    0 │    0 │ f    │   0 │   2 │ Insert
+        41823 │ (0,3) │ 1484 │ 1486 │    0 │    0 │ t    │   0 │   3 │ Update
+        41823 │ (0,4) │ 1484 │ 1488 │    0 │    0 │ f    │   0 │   4 │ Not deleted
+        41823 │ (0,5) │ 1484 │ 1489 │    1 │    1 │ f    │   0 │   5 │ Not updated
+        41823 │ (0,6) │ 1486 │    0 │    0 │    0 │ f    │   0 │   3 │ Updated
+        41823 │ (0,7) │ 1489 │    0 │    1 │    1 │ t    │   0 │   5 │ Not quite updated
+        41823 │ (0,8) │ 1490 │    0 │    2 │    2 │ t    │   0 │   6 │ Not inserted
   ```
 
 License

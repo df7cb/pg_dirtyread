@@ -26,6 +26,7 @@
 #include "access/tupconvert.h"
 #include "access/sysattr.h"
 #include "utils/builtins.h"
+#include "utils/tqual.h" /* HeapTupleIsSurelyDead */
 
 #include "dirtyread_tupconvert.h"
 
@@ -217,6 +218,10 @@ dirtyread_convert_tuples_by_name_map(TupleDesc indesc,
 			{
 				attrMap[i] = TableOidAttributeNumber;
 			}
+			else if (!strcmp(attname, "dead")) /* fake column to return HeapTupleIsSurelyDead */
+			{
+				attrMap[i] = DeadFakeAttributeNumber;
+			}
 		}
 		if (attrMap[i] == 0)
 			ereport(ERROR,
@@ -235,7 +240,7 @@ dirtyread_convert_tuples_by_name_map(TupleDesc indesc,
  * Perform conversion of a tuple according to the map.
  */
 HeapTuple
-dirtyread_do_convert_tuple(HeapTuple tuple, TupleConversionMap *map)
+dirtyread_do_convert_tuple(HeapTuple tuple, TupleConversionMap *map, TransactionId oldest_xmin)
 {
 	AttrNumber *attrMap = map->attrMap;
 	Datum	   *invalues = map->invalues;
@@ -259,7 +264,16 @@ dirtyread_do_convert_tuple(HeapTuple tuple, TupleConversionMap *map)
 	{
 		int			j = attrMap[i];
 
-		if (j < 0)
+		if (j == DeadFakeAttributeNumber)
+		{
+			outvalues[i] = HeapTupleIsSurelyDead(tuple
+#if PG_VERSION_NUM < 90400
+					->t_data
+#endif
+					, oldest_xmin);
+			outisnull[i] = false;
+		}
+		else if (j < 0)
 			outvalues[i] = heap_getsysattr(tuple, j, map->indesc, &outisnull[i]);
 		else
 		{

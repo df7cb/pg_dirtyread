@@ -29,9 +29,9 @@ SELECT CASE WHEN tableoid >= 0 THEN 0 END AS tableoid,
 	ctid,
 	CASE WHEN xmin::text::int >= 0 THEN 0 END AS xmin,
 	CASE WHEN xmax::text <> '0' THEN xmax::text::int - xmin::text::int END AS xmax,
-	cmin, cmax, oid, bar, baz
+	cmin, cmax, dead, oid, bar, baz
 	FROM pg_dirtyread('foo'::regclass)
-	AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, oid oid, bar bigint, baz text);
+	AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean, oid oid, bar bigint, baz text);
 
 -- error cases
 SELECT * FROM pg_dirtyread(0) as t(bar bigint, baz text);

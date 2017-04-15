@@ -4,5 +4,6 @@ pg-dirtyread (1.1) UNRELEASED; urgency=medium
   * Changes from 1.0:
     + Fix some crashes.
     + Add ability to retrieve system columns such as xmax and ctid.
+    + Add "dead" column to allow identification of removed rows
 
  -- Christoph Berg <myon@debian.org>  Sun, 09 Apr 2017 09:37:43 +0200

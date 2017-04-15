@@ -55,19 +55,19 @@ SELECT CASE WHEN tableoid >= 0 THEN 0 END AS tableoid,
 	ctid,
 	CASE WHEN xmin::text::int >= 0 THEN 0 END AS xmin,
 	CASE WHEN xmax::text <> '0' THEN xmax::text::int - xmin::text::int END AS xmax,
-	cmin, cmax, oid, bar, baz
+	cmin, cmax, dead, oid, bar, baz
 	FROM pg_dirtyread('foo'::regclass)
-	AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, oid oid, bar bigint, baz text);
- tableoid | ctid  | xmin | xmax | cmin | cmax | oid | bar |        baz        
-----------+-------+------+------+------+------+-----+-----+-------------------
-        0 | (0,1) |    0 |    1 |    0 |    0 |   0 |   1 | Delete
-        0 | (0,2) |    0 |      |    0 |    0 |   0 |   2 | Insert
-        0 | (0,3) |    0 |    2 |    0 |    0 |   0 |   3 | Update
-        0 | (0,4) |    0 |    3 |    0 |    0 |   0 |   4 | Not deleted
-        0 | (0,5) |    0 |    3 |    1 |    1 |   0 |   5 | Not updated
-        0 | (0,6) |    0 |      |    0 |    0 |   0 |   3 | Updated
-        0 | (0,7) |    0 |      |    1 |    1 |   0 |   5 | Not quite updated
-        0 | (0,8) |    0 |      |    2 |    2 |   0 |   6 | Not inserted
+	AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean, oid oid, bar bigint, baz text);
+ tableoid | ctid  | xmin | xmax | cmin | cmax | dead | oid | bar |        baz        
+----------+-------+------+------+------+------+------+-----+-----+-------------------
+        0 | (0,1) |    0 |    1 |    0 |    0 | t    |   0 |   1 | Delete
+        0 | (0,2) |    0 |      |    0 |    0 | f    |   0 |   2 | Insert
+        0 | (0,3) |    0 |    2 |    0 |    0 | t    |   0 |   3 | Update
+        0 | (0,4) |    0 |    3 |    0 |    0 | f    |   0 |   4 | Not deleted
+        0 | (0,5) |    0 |    3 |    1 |    1 | f    |   0 |   5 | Not updated
+        0 | (0,6) |    0 |      |    0 |    0 | f    |   0 |   3 | Updated
+        0 | (0,7) |    0 |      |    1 |    1 | t    |   0 |   5 | Not quite updated
+        0 | (0,8) |    0 |      |    2 |    2 | t    |   0 |   6 | Not inserted
 (8 rows)
 
 -- error cases

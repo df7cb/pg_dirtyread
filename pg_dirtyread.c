@@ -42,6 +42,7 @@
 #if PG_VERSION_NUM >= 90300
 #include "access/htup_details.h"
 #endif
+#include "storage/procarray.h" /* GetOldestXmin */
 
 #include "dirtyread_tupconvert.h"
 
@@ -51,6 +52,7 @@ typedef struct
     HeapScanDesc        scan;
     TupleDesc           reltupdesc;
     TupleConversionMap  *map;
+    TransactionId       oldest_xmin;
 } pg_dirtyread_ctx;
 
 PG_MODULE_MAGIC;
@@ -84,6 +86,13 @@ pg_dirtyread(PG_FUNCTION_ARGS)
         funcctx->tuple_desc = BlessTupleDesc(tupdesc);
         usr_ctx->map = dirtyread_convert_tuples_by_name(usr_ctx->reltupdesc, funcctx->tuple_desc, "Error converting tuple descriptors!");
         usr_ctx->scan = heap_beginscan(usr_ctx->rel, SnapshotAny, 0, NULL);
+        usr_ctx->oldest_xmin = GetOldestXmin(
+#if PG_VERSION_NUM >= 90400
+                usr_ctx->rel
+#else
+                false /* allDbs */
+#endif
+                , 0);
         funcctx->user_fctx = (void *) usr_ctx;
         MemoryContextSwitchTo(oldcontext);
     }
@@ -95,7 +104,7 @@ pg_dirtyread(PG_FUNCTION_ARGS)
     {
         if (usr_ctx->map != NULL)
         {
-            tuplein = dirtyread_do_convert_tuple(tuplein, usr_ctx->map);
+            tuplein = dirtyread_do_convert_tuple(tuplein, usr_ctx->map, usr_ctx->oldest_xmin);
             SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tuplein));
         }
         else
@@ -108,3 +117,6 @@ pg_dirtyread(PG_FUNCTION_ARGS)
         SRF_RETURN_DONE(funcctx);
     }
 }
+
+/* vim:et
+ */
