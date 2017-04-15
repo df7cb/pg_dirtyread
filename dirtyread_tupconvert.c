@@ -25,6 +25,7 @@
 #endif
 #include "access/tupconvert.h"
 #include "access/sysattr.h"
+#include "catalog/pg_type.h" /* *OID */
 #include "utils/builtins.h"
 #include "utils/tqual.h" /* HeapTupleIsSurelyDead */
 
@@ -138,6 +139,23 @@ dirtyread_convert_tuples_by_name(TupleDesc indesc,
 	return map;
 }
 
+static const struct system_columns_t {
+	char	   *attname;
+	Oid			atttypid;
+	int32		atttypmod;
+	int			attnum;
+} system_columns[] = {
+	{ "ctid",     TIDOID,  -1, SelfItemPointerAttributeNumber },
+	{ "oid",      OIDOID,  -1, ObjectIdAttributeNumber },
+	{ "xmin",     XIDOID,  -1, MinTransactionIdAttributeNumber },
+	{ "cmin",     CIDOID,  -1, MinCommandIdAttributeNumber },
+	{ "xmax",     XIDOID,  -1, MaxTransactionIdAttributeNumber },
+	{ "cmax",     CIDOID,  -1, MaxCommandIdAttributeNumber },
+	{ "tableoid", OIDOID,  -1, TableOidAttributeNumber },
+	{ "dead",     BOOLOID, -1, DeadFakeAttributeNumber }, /* fake column to return HeapTupleIsSurelyDead */
+	{ 0 },
+};
+
 /*
  * Return a palloc'd bare attribute map for tuple conversion, matching input
  * and output columns by name.  (Dropped columns are ignored in both input and
@@ -180,56 +198,37 @@ dirtyread_convert_tuples_by_name_map(TupleDesc indesc,
 					ereport(ERROR,
 							(errcode(ERRCODE_DATATYPE_MISMATCH),
 							 errmsg_internal("%s", _(msg)),
-							 errdetail("Attribute \"%s\" of type %s does not match corresponding attribute of type %s.",
+							 errdetail("Attribute \"%s\" has type %s in corresponding attribute of type %s.",
 									   attname,
-									   format_type_be(outdesc->tdtypeid),
+									   format_type_with_typemod(att->atttypid, att->atttypmod),
 									   format_type_be(indesc->tdtypeid))));
 				attrMap[i] = (AttrNumber) (j + 1);
 				break;
 			}
 		}
+		/* Check system columns */
 		if (attrMap[i] == 0)
-		{
-			if (!strcmp(attname, "ctid"))
-			{
-				attrMap[i] = SelfItemPointerAttributeNumber;
-			}
-			else if (!strcmp(attname, "oid"))
-			{
-				attrMap[i] = ObjectIdAttributeNumber;
-			}
-			else if (!strcmp(attname, "xmin"))
-			{
-				attrMap[i] = MinTransactionIdAttributeNumber;
-			}
-			else if (!strcmp(attname, "cmin"))
-			{
-				attrMap[i] = MinCommandIdAttributeNumber;
-			}
-			else if (!strcmp(attname, "xmax"))
-			{
-				attrMap[i] = MaxTransactionIdAttributeNumber;
-			}
-			else if (!strcmp(attname, "cmax"))
-			{
-				attrMap[i] = MaxCommandIdAttributeNumber;
-			}
-			else if (!strcmp(attname, "tableoid"))
-			{
-				attrMap[i] = TableOidAttributeNumber;
-			}
-			else if (!strcmp(attname, "dead")) /* fake column to return HeapTupleIsSurelyDead */
-			{
-				attrMap[i] = DeadFakeAttributeNumber;
-			}
-		}
+			for (j = 0; system_columns[j].attname; j++)
+				if (strcmp(attname, system_columns[j].attname) == 0)
+				{
+					/* Found it, check type */
+					if (atttypid != system_columns[j].atttypid || atttypmod != system_columns[j].atttypmod)
+						ereport(ERROR,
+								(errcode(ERRCODE_DATATYPE_MISMATCH),
+								 errmsg_internal("%s", _(msg)),
+								 errdetail("Attribute \"%s\" has type %s in corresponding attribute of type %s.",
+										   attname,
+										   format_type_be(system_columns[j].atttypid),
+										   format_type_be(indesc->tdtypeid))));
+					attrMap[i] = system_columns[j].attnum;
+					break;
+				}
 		if (attrMap[i] == 0)
 			ereport(ERROR,
 					(errcode(ERRCODE_DATATYPE_MISMATCH),
 					 errmsg_internal("%s", _(msg)),
-					 errdetail("Attribute \"%s\" of type %s does not exist in type %s.",
+					 errdetail("Attribute \"%s\" does not exist in type %s.",
 							   attname,
-							   format_type_be(outdesc->tdtypeid),
 							   format_type_be(indesc->tdtypeid))));
 	}
 

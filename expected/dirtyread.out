@@ -75,7 +75,31 @@ SELECT * FROM pg_dirtyread(0) as t(bar bigint, baz text);
 ERROR:  invalid relation oid "0"
 SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar int, baz text);
 ERROR:  Error converting tuple descriptors!
-DETAIL:  Attribute "bar" of type record does not match corresponding attribute of type foo.
+DETAIL:  Attribute "bar" has type bigint in corresponding attribute of type foo.
 SELECT * FROM pg_dirtyread('foo'::regclass) as t(moo bigint);
 ERROR:  Error converting tuple descriptors!
-DETAIL:  Attribute "moo" of type record does not exist in type foo.
+DETAIL:  Attribute "moo" does not exist in type foo.
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(tableoid bigint);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Attribute "tableoid" has type oid in corresponding attribute of type foo.
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(ctid bigint);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Attribute "ctid" has type tid in corresponding attribute of type foo.
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(xmin bigint);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Attribute "xmin" has type xid in corresponding attribute of type foo.
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(xmax bigint);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Attribute "xmax" has type xid in corresponding attribute of type foo.
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(cmin bigint);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Attribute "cmin" has type cid in corresponding attribute of type foo.
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(cmax bigint);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Attribute "cmax" has type cid in corresponding attribute of type foo.
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(dead bigint);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Attribute "dead" has type boolean in corresponding attribute of type foo.
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(oid bigint);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Attribute "oid" has type oid in corresponding attribute of type foo.

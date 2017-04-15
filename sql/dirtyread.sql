@@ -37,3 +37,11 @@ SELECT CASE WHEN tableoid >= 0 THEN 0 END AS tableoid,
 SELECT * FROM pg_dirtyread(0) as t(bar bigint, baz text);
 SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar int, baz text);
 SELECT * FROM pg_dirtyread('foo'::regclass) as t(moo bigint);
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(tableoid bigint);
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(ctid bigint);
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(xmin bigint);
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(xmax bigint);
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(cmin bigint);
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(cmax bigint);
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(dead bigint);
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(oid bigint);
