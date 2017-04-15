@@ -118,6 +118,7 @@ dirtyread_convert_tuples_by_name(TupleDesc indesc,
 	if (same)
 	{
 		/* Runtime conversion is not needed */
+		elog(DEBUG1, "tuple conversion is not needed");
 		pfree(attrMap);
 		return NULL;
 	}
