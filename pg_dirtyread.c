@@ -49,9 +49,9 @@
 typedef struct
 {
     Relation            rel;
-    HeapScanDesc        scan;
     TupleDesc           reltupdesc;
     TupleConversionMap  *map;
+    HeapScanDesc        scan;
     TransactionId       oldest_xmin;
 } pg_dirtyread_ctx;
 
@@ -64,16 +64,16 @@ Datum
 pg_dirtyread(PG_FUNCTION_ARGS)
 {
     FuncCallContext     *funcctx;
-    MemoryContext       oldcontext;
     pg_dirtyread_ctx    *usr_ctx;
-    Oid                 relid;
     HeapTuple           tuplein;
-    TupleDesc           tupdesc;
 
     if (SRF_IS_FIRSTCALL())
     {
-        relid = PG_GETARG_OID(0);
+        MemoryContext       oldcontext;
+        Oid                 relid;
+        TupleDesc           tupdesc;
 
+        relid = PG_GETARG_OID(0);
         if (!OidIsValid(relid))
             elog(ERROR, "invalid relation oid \"%d\"", relid);
 
@@ -82,9 +82,14 @@ pg_dirtyread(PG_FUNCTION_ARGS)
         usr_ctx = (pg_dirtyread_ctx *) palloc(sizeof(pg_dirtyread_ctx));
         usr_ctx->rel = heap_open(relid, AccessShareLock);
         usr_ctx->reltupdesc = RelationGetDescr(usr_ctx->rel);
-        get_call_result_type(fcinfo, NULL, &tupdesc);
+        if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+            ereport(ERROR,
+                    (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+                     errmsg("function returning record called in context "
+                         "that cannot accept type record")));
         funcctx->tuple_desc = BlessTupleDesc(tupdesc);
-        usr_ctx->map = dirtyread_convert_tuples_by_name(usr_ctx->reltupdesc, funcctx->tuple_desc, "Error converting tuple descriptors!");
+        usr_ctx->map = dirtyread_convert_tuples_by_name(usr_ctx->reltupdesc,
+                funcctx->tuple_desc, "Error converting tuple descriptors!");
         usr_ctx->scan = heap_beginscan(usr_ctx->rel, SnapshotAny, 0, NULL);
         usr_ctx->oldest_xmin = GetOldestXmin(
 #if PG_VERSION_NUM >= 90400
