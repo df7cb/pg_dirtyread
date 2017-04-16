@@ -42,6 +42,7 @@
 #if PG_VERSION_NUM >= 90300
 #include "access/htup_details.h"
 #endif
+#include "miscadmin.h" /* superuser */
 #include "storage/procarray.h" /* GetOldestXmin */
 
 #include "dirtyread_tupconvert.h"
@@ -72,6 +73,11 @@ pg_dirtyread(PG_FUNCTION_ARGS)
         MemoryContext       oldcontext;
         Oid                 relid;
         TupleDesc           tupdesc;
+
+        if (!superuser())
+            ereport(ERROR,
+                    (errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+                     errmsg("must be superuser to use pg_dirtyread")));
 
         relid = PG_GETARG_OID(0);
         if (!OidIsValid(relid))

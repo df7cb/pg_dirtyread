@@ -105,3 +105,6 @@ DETAIL:  Attribute "dead" has type boolean in corresponding attribute of type fo
 SELECT * FROM pg_dirtyread('foo'::regclass) as t(oid bigint);
 ERROR:  Error converting tuple descriptors!
 DETAIL:  Attribute "oid" has type oid in corresponding attribute of type foo.
+SET ROLE luser;
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar bigint, baz text);
+ERROR:  must be superuser to use pg_dirtyread

@@ -46,3 +46,6 @@ SELECT * FROM pg_dirtyread('foo'::regclass) as t(cmin bigint);
 SELECT * FROM pg_dirtyread('foo'::regclass) as t(cmax bigint);
 SELECT * FROM pg_dirtyread('foo'::regclass) as t(dead bigint);
 SELECT * FROM pg_dirtyread('foo'::regclass) as t(oid bigint);
+
+SET ROLE luser;
+SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar bigint, baz text);
