@@ -4,8 +4,8 @@ Source: https://github.com/ChristophBerg/pg_dirtyread
 
 Files: *
 Copyright:
+ Copyright (c) 1996-2017, PostgreSQL Global Development Group
  Copyright (c) 2012, OmniTI Computer Consulting, Inc.
- Portions Copyright (c) 1996-2017, PostgreSQL Global Development Group
  Portions Copyright (c) 1994, The Regents of the University of California
 License: BSD-like
  All rights reserved.
@@ -14,16 +14,16 @@ License: BSD-like
  modification, are permitted provided that the following conditions are
  met:
  .
-     * Redistributions of source code must retain the above copyright
-       notice, this list of conditions and the following disclaimer.
-     * Redistributions in binary form must reproduce the above
-       copyright notice, this list of conditions and the following
-       disclaimer in the documentation and/or other materials provided
-       with the distribution.
-     * Neither the name OmniTI Computer Consulting, Inc. nor the names
-       of its contributors may be used to endorse or promote products
-       derived from this software without specific prior written
-       permission.
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above
+    copyright notice, this list of conditions and the following
+    disclaimer in the documentation and/or other materials provided
+    with the distribution.
+  * Neither the name OmniTI Computer Consulting, Inc. nor the names
+    of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written
+    permission.
  .
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT

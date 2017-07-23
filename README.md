@@ -70,7 +70,8 @@ type boolean is available to report dead rows (as by `HeapTupleIsSurelyDead`).
 
   ```sql
     SELECT * FROM pg_dirtyread('foo'::regclass)
-        AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean, oid oid, bar bigint, baz text);
+        AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean,
+             oid oid, bar bigint, baz text);
      tableoid │ ctid  │ xmin │ xmax │ cmin │ cmax │ dead │ oid │ bar │        baz
     ──────────┼───────┼──────┼──────┼──────┼──────┼──────┼─────┼─────┼───────────────────
         41823 │ (0,1) │ 1484 │ 1485 │    0 │    0 │ t    │   0 │   1 │ Delete
@@ -86,9 +87,11 @@ type boolean is available to report dead rows (as by `HeapTupleIsSurelyDead`).
 License
 -------
 
-Copyright (c) 2012, OmniTI Computer Consulting, Inc.
+Original author: Phil Sorber
 
-Portions Copyright (c) 1996-2017, PostgreSQL Global Development Group
+Copyright (c) 1996-2017, PostgreSQL Global Development Group
+
+Copyright (c) 2012, OmniTI Computer Consulting, Inc.
 
 Portions Copyright (c) 1994, The Regents of the University of California
 
@@ -98,16 +101,16 @@ Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
 met:
 
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above
-      copyright notice, this list of conditions and the following
-      disclaimer in the documentation and/or other materials provided
-      with the distribution.
-    * Neither the name OmniTI Computer Consulting, Inc. nor the names
-      of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written
-      permission.
+* Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above
+  copyright notice, this list of conditions and the following
+  disclaimer in the documentation and/or other materials provided
+  with the distribution.
+* Neither the name OmniTI Computer Consulting, Inc. nor the names
+  of its contributors may be used to endorse or promote products
+  derived from this software without specific prior written
+  permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
