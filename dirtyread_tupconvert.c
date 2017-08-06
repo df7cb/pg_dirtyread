@@ -25,6 +25,7 @@
 #endif
 #include "access/tupconvert.h"
 #include "access/sysattr.h"
+#include "access/xlog.h" /* RecoveryInProgress */
 #include "catalog/pg_type.h" /* *OID */
 #include "utils/builtins.h"
 #include "utils/tqual.h" /* HeapTupleIsSurelyDead */
@@ -221,6 +222,12 @@ dirtyread_convert_tuples_by_name_map(TupleDesc indesc,
 										   attname,
 										   format_type_be(system_columns[j].atttypid),
 										   format_type_be(indesc->tdtypeid))));
+					/* GetOldestXmin() is not available during recovery */
+					if (system_columns[j].attnum == DeadFakeAttributeNumber &&
+							RecoveryInProgress())
+						ereport(ERROR,
+								(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+								 errmsg("Cannot use \"dead\" column during recovery")));
 					attrMap[i] = system_columns[j].attnum;
 					break;
 				}

@@ -67,6 +67,8 @@ System Columns
 System columns such as `xmax` and `ctid` can be retrieved by including them in
 the table alias attached to the `pg_dirtyread()` call. A special column `dead` of
 type boolean is available to report dead rows (as by `HeapTupleIsSurelyDead`).
+The `dead` column is not usable during recovery, i.e. most notably not on
+standby servers.
 
   ```sql
     SELECT * FROM pg_dirtyread('foo'::regclass)

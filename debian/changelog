@@ -1,3 +1,11 @@
+pg-dirtyread (1.2) unstable; urgency=medium
+
+  * Refuse to return the "dead" pseudo column during recovery,
+    because GetOldestXmin() asserts !RecoveryInProgress().
+    Spotted by Andreas Seltenreich, thanks!
+
+ -- Christoph Berg <myon@debian.org>  Sun, 06 Aug 2017 16:57:41 +0200
+
 pg-dirtyread (1.1) unstable; urgency=medium
 
   * Initial release.

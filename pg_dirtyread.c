@@ -42,6 +42,7 @@
 #if PG_VERSION_NUM >= 90300
 #include "access/htup_details.h"
 #endif
+#include "access/xlog.h" /* RecoveryInProgress */
 #include "miscadmin.h" /* superuser */
 #include "storage/procarray.h" /* GetOldestXmin */
 
@@ -97,7 +98,9 @@ pg_dirtyread(PG_FUNCTION_ARGS)
         usr_ctx->map = dirtyread_convert_tuples_by_name(usr_ctx->reltupdesc,
                 funcctx->tuple_desc, "Error converting tuple descriptors!");
         usr_ctx->scan = heap_beginscan(usr_ctx->rel, SnapshotAny, 0, NULL);
-        usr_ctx->oldest_xmin = GetOldestXmin(
+        /* only call GetOldestXmin while not in recovery */
+        if (!RecoveryInProgress())
+            usr_ctx->oldest_xmin = GetOldestXmin(
 #if PG_VERSION_NUM >= 90400
                 usr_ctx->rel
 #else
