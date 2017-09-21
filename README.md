@@ -86,10 +86,14 @@ standby servers.
         41823 │ (0,8) │ 1490 │    0 │    2 │    2 │ t    │   0 │   6 │ Not inserted
   ```
 
-License
+Authors
 -------
 
-Original author: Phil Sorber
+pg_dirtyread 1.0 was written by Phil Sorber in 2012. Christoph Berg added the
+ability to retrieve system columns in version 1.1, released 2017.
+
+License
+-------
 
 Copyright (c) 1996-2017, PostgreSQL Global Development Group
 
