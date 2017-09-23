@@ -32,6 +32,11 @@
 
 #include "dirtyread_tupconvert.h"
 
+#if PG_VERSION_NUM < 100000
+/* from src/include/access/tupdesc.h, introduced in 2cd708452 */
+#define TupleDescAttr(tupdesc, i) ((tupdesc)->attrs[(i)])
+#endif
+
 /*
  * The conversion setup routines have the following common API:
  *
@@ -104,9 +109,9 @@ dirtyread_convert_tuples_by_name(TupleDesc indesc,
 			 * must agree.
 			 */
 			if (attrMap[i] == 0 &&
-				indesc->attrs[i]->attisdropped &&
-				indesc->attrs[i]->attlen == outdesc->attrs[i]->attlen &&
-				indesc->attrs[i]->attalign == outdesc->attrs[i]->attalign)
+				TupleDescAttr(indesc, i)->attisdropped &&
+				TupleDescAttr(indesc, i)->attlen == TupleDescAttr(outdesc, i)->attlen &&
+				TupleDescAttr(indesc, i)->attalign == TupleDescAttr(outdesc, i)->attalign)
 				continue;
 
 			same = false;
@@ -177,7 +182,7 @@ dirtyread_convert_tuples_by_name_map(TupleDesc indesc,
 	attrMap = (AttrNumber *) palloc0(n * sizeof(AttrNumber));
 	for (i = 0; i < n; i++)
 	{
-		Form_pg_attribute att = outdesc->attrs[i];
+		Form_pg_attribute att = TupleDescAttr(outdesc, i);
 		char	   *attname;
 		Oid			atttypid;
 		int32		atttypmod;
@@ -190,7 +195,7 @@ dirtyread_convert_tuples_by_name_map(TupleDesc indesc,
 		atttypmod = att->atttypmod;
 		for (j = 0; j < indesc->natts; j++)
 		{
-			att = indesc->attrs[j];
+			att = TupleDescAttr(indesc, j);
 			if (att->attisdropped)
 				continue;
 			if (strcmp(attname, NameStr(att->attname)) == 0)
