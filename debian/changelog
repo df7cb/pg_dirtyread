@@ -1,5 +1,6 @@
-pg-dirtyread (1.3) UNRELEASED; urgency=medium
+pg-dirtyread (1.3) unstable; urgency=medium
 
+  * Upload for PostgreSQL 10.
   * Use TupleDescAttr to access tuple descriptor attributes.
 
  -- Christoph Berg <myon@debian.org>  Sat, 23 Sep 2017 22:59:08 +0200
