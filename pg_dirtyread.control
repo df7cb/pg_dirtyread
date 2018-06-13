@@ -1,5 +1,5 @@
 # pg_dirtyread
-default_version = '1.0'
+default_version = '2'
 comment = 'Read dead but unvacuumed rows from table'
 module_pathname = '$libdir/pg_dirtyread'
 relocatable = true

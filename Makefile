@@ -2,7 +2,8 @@ MODULE_big = pg_dirtyread
 OBJS = pg_dirtyread.o dirtyread_tupconvert.o
 
 EXTENSION = pg_dirtyread
-DATA = pg_dirtyread--1.0.sql
+DATA = pg_dirtyread--1.0.sql \
+	   pg_dirtyread--1.0--2.sql pg_dirtyread--2.sql
 
 REGRESS = extension dirtyread
 
