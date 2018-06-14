@@ -44,6 +44,7 @@ install:
   - dpkg -l postgresql\* | cat
 
 script:
+  - echo 1.0 > debian/source/format
   - pg_buildext updatecontrol
   - dpkg-buildpackage -us -uc -rfakeroot
   - for deb in ../*.deb; do echo "$deb:"; dpkg-deb --info $deb; dpkg-deb --contents $deb; done
