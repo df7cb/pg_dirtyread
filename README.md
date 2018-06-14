@@ -34,7 +34,7 @@ running:
 
   ```sql
     CREATE EXTENSION pg_dirtyread;
-    SELECT * FROM pg_dirtyread('tablename'::regclass) AS t(col1 type1, col2 type2, ...);
+    SELECT * FROM pg_dirtyread('tablename') AS t(col1 type1, col2 type2, ...);
   ```
 
 The `pg_dirtyread()` function returns RECORD, therefore it is necessary to
@@ -56,7 +56,7 @@ Example:
     INSERT INTO foo VALUES (1, 'Test'), (2, 'New Test');
     DELETE FROM foo WHERE bar = 1;
 
-    SELECT * FROM pg_dirtyread('foo'::regclass) as t(bar bigint, baz text);
+    SELECT * FROM pg_dirtyread('foo') as t(bar bigint, baz text);
   ```
 
 Where the schema of `foo` is `(bar bigint, baz text)`.
@@ -71,7 +71,7 @@ The `dead` column is not usable during recovery, i.e. most notably not on
 standby servers.
 
   ```sql
-    SELECT * FROM pg_dirtyread('foo'::regclass)
+    SELECT * FROM pg_dirtyread('foo')
         AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean,
              oid oid, bar bigint, baz text);
      tableoid │ ctid  │ xmin │ xmax │ cmin │ cmax │ dead │ oid │ bar │        baz
