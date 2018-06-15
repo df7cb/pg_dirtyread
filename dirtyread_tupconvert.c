@@ -9,7 +9,7 @@
  * executor's "junkfilter" routines, but these functions work on bare
  * HeapTuples rather than TupleTableSlots.
  *
- * Portions Copyright (c) 1996-2017, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -100,6 +100,9 @@ dirtyread_convert_tuples_by_name(TupleDesc indesc,
 		same = true;
 		for (i = 0; i < n; i++)
 		{
+			Form_pg_attribute inatt;
+			Form_pg_attribute outatt;
+
 			if (attrMap[i] == (i + 1))
 				continue;
 
@@ -108,10 +111,12 @@ dirtyread_convert_tuples_by_name(TupleDesc indesc,
 			 * also dropped, we needn't convert.  However, attlen and attalign
 			 * must agree.
 			 */
+			inatt = TupleDescAttr(indesc, i);
+			outatt = TupleDescAttr(outdesc, i);
 			if (attrMap[i] == 0 &&
-				TupleDescAttr(indesc, i)->attisdropped &&
-				TupleDescAttr(indesc, i)->attlen == TupleDescAttr(outdesc, i)->attlen &&
-				TupleDescAttr(indesc, i)->attalign == TupleDescAttr(outdesc, i)->attalign)
+				inatt->attisdropped &&
+				inatt->attlen == outatt->attlen &&
+				inatt->attalign == outatt->attalign)
 				continue;
 
 			same = false;
@@ -140,7 +145,7 @@ dirtyread_convert_tuples_by_name(TupleDesc indesc,
 	n = indesc->natts + 1;		/* +1 for NULL */
 	map->invalues = (Datum *) palloc(n * sizeof(Datum));
 	map->inisnull = (bool *) palloc(n * sizeof(bool));
-	map->invalues[0] = (Datum) 0;		/* set up the NULL entry */
+	map->invalues[0] = (Datum) 0;	/* set up the NULL entry */
 	map->inisnull[0] = true;
 
 	return map;
@@ -182,32 +187,32 @@ dirtyread_convert_tuples_by_name_map(TupleDesc indesc,
 	attrMap = (AttrNumber *) palloc0(n * sizeof(AttrNumber));
 	for (i = 0; i < n; i++)
 	{
-		Form_pg_attribute att = TupleDescAttr(outdesc, i);
+		Form_pg_attribute outatt = TupleDescAttr(outdesc, i);
 		char	   *attname;
 		Oid			atttypid;
 		int32		atttypmod;
 		int			j;
 
-		if (att->attisdropped)
+		if (outatt->attisdropped)
 			continue;			/* attrMap[i] is already 0 */
-		attname = NameStr(att->attname);
-		atttypid = att->atttypid;
-		atttypmod = att->atttypmod;
+		attname = NameStr(outatt->attname);
+		atttypid = outatt->atttypid;
+		atttypmod = outatt->atttypmod;
 		for (j = 0; j < indesc->natts; j++)
 		{
-			att = TupleDescAttr(indesc, j);
-			if (att->attisdropped)
+			outatt = TupleDescAttr(indesc, j);
+			if (outatt->attisdropped)
 				continue;
-			if (strcmp(attname, NameStr(att->attname)) == 0)
+			if (strcmp(attname, NameStr(outatt->attname)) == 0)
 			{
 				/* Found it, check type */
-				if (atttypid != att->atttypid || atttypmod != att->atttypmod)
+				if (atttypid != outatt->atttypid || atttypmod != outatt->atttypmod)
 					ereport(ERROR,
 							(errcode(ERRCODE_DATATYPE_MISMATCH),
 							 errmsg_internal("%s", _(msg)),
 							 errdetail("Attribute \"%s\" has type %s in corresponding attribute of type %s.",
 									   attname,
-									   format_type_with_typemod(att->atttypid, att->atttypmod),
+									   format_type_with_typemod(outatt->atttypid, outatt->atttypmod),
 									   format_type_be(indesc->tdtypeid))));
 				attrMap[i] = (AttrNumber) (j + 1);
 				break;

@@ -4,7 +4,7 @@
  *	  Tuple conversion support.
  *
  *
- * Portions Copyright (c) 1996-2017, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/access/tupconvert.h
@@ -28,4 +28,4 @@ extern HeapTuple dirtyread_do_convert_tuple(HeapTuple tuple, TupleConversionMap 
 
 #define DeadFakeAttributeNumber FirstLowInvalidHeapAttributeNumber
 
-#endif   /* DIRTYREAD_TUPCONVERT_H */
+#endif							/* TUPCONVERT_H */
