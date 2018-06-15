@@ -200,19 +200,20 @@ dirtyread_convert_tuples_by_name_map(TupleDesc indesc,
 		atttypmod = outatt->atttypmod;
 		for (j = 0; j < indesc->natts; j++)
 		{
-			outatt = TupleDescAttr(indesc, j);
-			if (outatt->attisdropped)
+			Form_pg_attribute inatt = TupleDescAttr(indesc, j);
+
+			if (inatt->attisdropped)
 				continue;
-			if (strcmp(attname, NameStr(outatt->attname)) == 0)
+			if (strcmp(attname, NameStr(inatt->attname)) == 0)
 			{
 				/* Found it, check type */
-				if (atttypid != outatt->atttypid || atttypmod != outatt->atttypmod)
+				if (atttypid != inatt->atttypid || atttypmod != inatt->atttypmod)
 					ereport(ERROR,
 							(errcode(ERRCODE_DATATYPE_MISMATCH),
 							 errmsg_internal("%s", _(msg)),
 							 errdetail("Attribute \"%s\" has type %s in corresponding attribute of type %s.",
 									   attname,
-									   format_type_with_typemod(outatt->atttypid, outatt->atttypmod),
+									   format_type_with_typemod(inatt->atttypid, inatt->atttypmod),
 									   format_type_be(indesc->tdtypeid))));
 				attrMap[i] = (AttrNumber) (j + 1);
 				break;
