@@ -1,1 +1,2 @@
-all
+# needs HeapTupleIsSurelyDead
+9.2+

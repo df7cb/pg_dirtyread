@@ -2,7 +2,7 @@ pg_dirtyread
 ============
 
 The pg_dirtyread extension provides the ability to read dead but unvacuumed
-rows from a relation.
+rows from a relation. Supports PostgreSQL 9.2 and later.
 
 [![Build Status](https://travis-ci.org/ChristophBerg/pg_dirtyread.svg?branch=master)](https://travis-ci.org/ChristophBerg/pg_dirtyread)
 
@@ -95,7 +95,7 @@ ability to retrieve system columns in version 1.1, released 2017.
 License
 -------
 
-Copyright (c) 1996-2017, PostgreSQL Global Development Group
+Copyright (c) 1996-2018, PostgreSQL Global Development Group
 
 Copyright (c) 2012, OmniTI Computer Consulting, Inc.
 
