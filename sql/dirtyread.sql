@@ -49,3 +49,66 @@ SELECT * FROM pg_dirtyread('foo') as t(oid bigint);
 
 SET ROLE luser;
 SELECT * FROM pg_dirtyread('foo') as t(bar bigint, baz text);
+RESET ROLE;
+
+-- reading from dropped columns
+CREATE TABLE bar (
+	id int,
+	a int,
+	b bigint,
+	c text,
+	d varchar(10),
+	e boolean,
+	f bigint[],
+	z int
+);
+ALTER TABLE bar SET (
+  autovacuum_enabled = false, toast.autovacuum_enabled = false
+);
+INSERT INTO bar VALUES (1, 2, 3, '4', '5', true, '{7}', 8);
+ALTER TABLE bar DROP COLUMN a, DROP COLUMN b, DROP COLUMN c, DROP COLUMN d, DROP COLUMN e, DROP COLUMN f;
+INSERT INTO bar VALUES (2, 8);
+SELECT * FROM bar;
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+
+-- errors
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_0 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_9 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 bigint, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 int, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+-- mismatch not catched:
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 timestamptz, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 bigint, dropped_4 int,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(11), dropped_6 boolean, dropped_7 bigint[], z int);
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 text, dropped_7 bigint[], z int);
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 int[], z int);
+-- mismatch not catched:
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 timestamptz[], z int);
+
+-- clean table
+VACUUM FULL bar;
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);

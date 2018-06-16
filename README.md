@@ -57,9 +57,32 @@ Example:
     DELETE FROM foo WHERE bar = 1;
 
     SELECT * FROM pg_dirtyread('foo') as t(bar bigint, baz text);
+     bar │   baz
+    ─────┼──────────
+       1 │ Test
+       2 │ New Test
   ```
 
-Where the schema of `foo` is `(bar bigint, baz text)`.
+Dropped Columns
+---------------
+
+The content of dropped columns can be retrieved as long as the table has not
+been rewritten (e.g. via `VACUUM FULL` or `CLUSTER`). Use `dropped_N` to access
+the Nth column, counting from 1. PostgreSQL deletes the type information of the
+original column, so only a few sanity checks can be done if the correct type
+was specified in the table alias; checked are type length, type alignment, type
+modifier, and pass-by-value.
+
+  ```sql
+    CREATE TABLE ab(a text, b text);
+    INSERT INTO ab VALUES ('Hello', 'World');
+    ALTER TABLE ab DROP COLUMN b;
+    DELETE FROM ab;
+    SELECT * FROM pg_dirtyread('ab') ab(a text, dropped_2 text);
+       a   │ dropped_2
+    ───────┼───────────
+     Hello │ World
+  ```
 
 System Columns
 --------------

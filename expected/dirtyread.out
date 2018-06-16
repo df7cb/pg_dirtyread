@@ -108,3 +108,109 @@ DETAIL:  Attribute "oid" has type oid in corresponding attribute of type foo.
 SET ROLE luser;
 SELECT * FROM pg_dirtyread('foo') as t(bar bigint, baz text);
 ERROR:  must be superuser to use pg_dirtyread
+RESET ROLE;
+-- reading from dropped columns
+CREATE TABLE bar (
+	id int,
+	a int,
+	b bigint,
+	c text,
+	d varchar(10),
+	e boolean,
+	f bigint[],
+	z int
+);
+ALTER TABLE bar SET (
+  autovacuum_enabled = false, toast.autovacuum_enabled = false
+);
+INSERT INTO bar VALUES (1, 2, 3, '4', '5', true, '{7}', 8);
+ALTER TABLE bar DROP COLUMN a, DROP COLUMN b, DROP COLUMN c, DROP COLUMN d, DROP COLUMN e, DROP COLUMN f;
+INSERT INTO bar VALUES (2, 8);
+SELECT * FROM bar;
+ id | z 
+----+---
+  1 | 8
+  2 | 8
+(2 rows)
+
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+ id | dropped_2 | dropped_3 | dropped_4 | dropped_5 | dropped_6 | dropped_7 | z 
+----+-----------+-----------+-----------+-----------+-----------+-----------+---
+  1 |         2 |         3 | 4         | 5         | t         | {7}       | 8
+  2 |           |           |           |           |           |           | 8
+(2 rows)
+
+-- errors
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_0 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Attribute "dropped_0" index is out of range 1 .. 8.
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_9 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Attribute "dropped_9" index is out of range 1 .. 8.
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 bigint, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Type length of dropped column "dropped_2" was 4.
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 int, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Type length of dropped column "dropped_3" was 8.
+-- mismatch not catched:
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 timestamptz, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+ id | dropped_2 |              dropped_3              | dropped_4 | dropped_5 | dropped_6 | dropped_7 | z 
+----+-----------+-------------------------------------+-----------+-----------+-----------+-----------+---
+  1 |         2 | Fri Dec 31 16:00:00.000003 1999 PST | 4         | 5         | t         | {7}       | 8
+  2 |           |                                     |           |           |           |           | 8
+(2 rows)
+
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 bigint, dropped_4 int,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Type length of dropped column "dropped_4" was -1.
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(11), dropped_6 boolean, dropped_7 bigint[], z int);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Type modifier of dropped column "dropped_5" was character varying(10).
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 text, dropped_7 bigint[], z int);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Type length of dropped column "dropped_6" was 1.
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 int[], z int);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Alignment of dropped column "dropped_7" was d.
+-- mismatch not catched:
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 timestamptz[], z int);
+ id | dropped_2 | dropped_3 | dropped_4 | dropped_5 | dropped_6 | dropped_7 | z 
+----+-----------+-----------+-----------+-----------+-----------+-----------+---
+  1 |         2 |         3 | 4         | 5         | t         | {7}       | 8
+  2 |           |           |           |           |           |           | 8
+(2 rows)
+
+-- clean table
+VACUUM FULL bar;
+SELECT * FROM pg_dirtyread('bar')
+  bar(id int, dropped_2 int, dropped_3 bigint, dropped_4 text,
+      dropped_5 varchar(10), dropped_6 boolean, dropped_7 bigint[], z int);
+ id | dropped_2 | dropped_3 | dropped_4 | dropped_5 | dropped_6 | dropped_7 | z 
+----+-----------+-----------+-----------+-----------+-----------+-----------+---
+  1 |           |           |           |           |           |           | 8
+  2 |           |           |           |           |           |           | 8
+(2 rows)
+

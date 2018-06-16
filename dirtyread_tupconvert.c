@@ -173,6 +173,9 @@ static const struct system_columns_t {
  * and output columns by name.  (Dropped columns are ignored in both input and
  * output.)  This is normally a subroutine for convert_tuples_by_name, but can
  * be used standalone.
+ *
+ * This version from dirtyread_tupconvert.c adds the ability to retrieve dropped
+ * columns by requesting "dropped_N" as output column, where N is the attnum.
  */
 AttrNumber *
 dirtyread_convert_tuples_by_name_map(TupleDesc indesc,
@@ -219,6 +222,56 @@ dirtyread_convert_tuples_by_name_map(TupleDesc indesc,
 				break;
 			}
 		}
+
+		/* Check dropped columns */
+		if (attrMap[i] == 0)
+			if (strncmp(attname, "dropped_", sizeof("dropped_") - 1) == 0)
+			{
+				Form_pg_attribute inatt;
+				j = atoi(attname + sizeof("dropped_") - 1);
+				if (j < 1 || j > indesc->natts)
+					ereport(ERROR,
+							(errcode(ERRCODE_DATATYPE_MISMATCH),
+							 errmsg_internal("%s", _(msg)),
+							 errdetail("Attribute \"%s\" index is out of range 1 .. %d.",
+									 attname, indesc->natts)));
+				inatt = TupleDescAttr(indesc, j - 1);
+				if (! inatt->attisdropped)
+					ereport(ERROR,
+							(errcode(ERRCODE_DATATYPE_MISMATCH),
+							 errmsg_internal("%s", _(msg)),
+							 errdetail("Attribute %d is not a dropped column.", j)));
+
+				if (outatt->attlen != inatt->attlen)
+					ereport(ERROR,
+							(errcode(ERRCODE_DATATYPE_MISMATCH),
+							 errmsg_internal("%s", _(msg)),
+							 errdetail("Type length of dropped column \"%s\" was %d.",
+									   attname, inatt->attlen)));
+				if (outatt->attbyval != inatt->attbyval)
+					ereport(ERROR,
+							(errcode(ERRCODE_DATATYPE_MISMATCH),
+							 errmsg_internal("%s", _(msg)),
+							 errdetail("\"By value\" of dropped column \"%s\" does not match.",
+									   attname)));
+				if (outatt->attalign != inatt->attalign)
+					ereport(ERROR,
+							(errcode(ERRCODE_DATATYPE_MISMATCH),
+							 errmsg_internal("%s", _(msg)),
+							 errdetail("Alignment of dropped column \"%s\" was %c.",
+									   attname, inatt->attalign)));
+
+				inatt->atttypid = atttypid;
+				if (atttypmod != inatt->atttypmod)
+					ereport(ERROR,
+							(errcode(ERRCODE_DATATYPE_MISMATCH),
+							 errmsg_internal("%s", _(msg)),
+							 errdetail("Type modifier of dropped column \"%s\" was %s.",
+									   attname,
+									   format_type_with_typemod(inatt->atttypid, inatt->atttypmod))));
+				attrMap[i] = (AttrNumber) j;
+			}
+
 		/* Check system columns */
 		if (attrMap[i] == 0)
 			for (j = 0; system_columns[j].attname; j++)
@@ -242,6 +295,7 @@ dirtyread_convert_tuples_by_name_map(TupleDesc indesc,
 					attrMap[i] = system_columns[j].attnum;
 					break;
 				}
+
 		if (attrMap[i] == 0)
 			ereport(ERROR,
 					(errcode(ERRCODE_DATATYPE_MISMATCH),
