@@ -1,3 +1,10 @@
+pg-dirtyread (2.0-2) unstable; urgency=medium
+
+  * Upload for PostgreSQL 11.
+  * Update watch file to ignore debian/ tags.
+
+ -- Christoph Berg <myon@debian.org>  Fri, 12 Oct 2018 12:54:36 +0200
+
 pg-dirtyread (2.0-1) unstable; urgency=medium
 
   * Change pg_dirtyread to take regclass as argument.

@@ -1,2 +1,2 @@
 version=4
-https://github.com/ChristophBerg/pg_dirtyread/releases .*/([0-9].*).tar.gz
+https://github.com/ChristophBerg/pg_dirtyread/releases .*/([0-9.]*).tar.gz
