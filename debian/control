@@ -1,10 +1,10 @@
 Source: pg-dirtyread
 Section: database
 Priority: optional
-Maintainer: Debian PostgreSQL Maintainers <pkg-postgresql-public@lists.alioth.debian.org>
+Maintainer: Debian PostgreSQL Maintainers <team+postgresql@tracker.debian.org>
 Uploaders: Christoph Berg <myon@debian.org>
 Build-Depends: debhelper (>= 9), postgresql-server-dev-all (>= 153~)
-Standards-Version: 4.1.0
+Standards-Version: 4.3.0
 Vcs-Browser: https://github.com/ChristophBerg/pg_dirtyread
 Vcs-Git: https://github.com/ChristophBerg/pg_dirtyread.git
 
