@@ -106,6 +106,9 @@ SET ROLE luser;
 SELECT * FROM pg_dirtyread('foo') as t(bar bigint, baz text);
 ERROR:  must be superuser to use pg_dirtyread
 RESET ROLE;
+CREATE INDEX ON foo(bar);
+SELECT * FROM pg_dirtyread('foo_bar_idx') as t(bar bigint);
+ERROR:  "foo_bar_idx" is an index
 -- reading from dropped columns
 CREATE TABLE bar (
 	id int,
