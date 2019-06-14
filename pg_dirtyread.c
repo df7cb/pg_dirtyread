@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996-2017, PostgreSQL Global Development Group
+ * Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Copyright (c) 2012, OmniTI Computer Consulting, Inc.
  * Portions Copyright (c) 1994, The Regents of the University of California
  * All rights reserved.
@@ -35,7 +35,13 @@
 
 #include "postgres.h"
 #include "funcapi.h"
+#if PG_VERSION_NUM >= 120000
+#include "access/heapam.h"
+#include "access/table.h"
+#include "utils/snapmgr.h"
+#else
 #include "utils/tqual.h"
+#endif
 #include "utils/rel.h"
 #include "catalog/pg_type.h"
 #include "access/tupconvert.h"
@@ -53,7 +59,11 @@ typedef struct
     Relation            rel;
     TupleDesc           reltupdesc;
     TupleConversionMap  *map;
+#if PG_VERSION_NUM >= 120000
+    TableScanDesc       scan;
+#else
     HeapScanDesc        scan;
+#endif
     TransactionId       oldest_xmin;
 } pg_dirtyread_ctx;
 
@@ -97,7 +107,11 @@ pg_dirtyread(PG_FUNCTION_ARGS)
         funcctx->tuple_desc = BlessTupleDesc(tupdesc);
         usr_ctx->map = dirtyread_convert_tuples_by_name(usr_ctx->reltupdesc,
                 funcctx->tuple_desc, "Error converting tuple descriptors!");
-        usr_ctx->scan = heap_beginscan(usr_ctx->rel, SnapshotAny, 0, NULL);
+        usr_ctx->scan = heap_beginscan(usr_ctx->rel, SnapshotAny, 0, NULL
+#if PG_VERSION_NUM >= 120000
+                , NULL, 0
+#endif
+                );
         /* only call GetOldestXmin while not in recovery */
         if (!RecoveryInProgress())
             usr_ctx->oldest_xmin = GetOldestXmin(

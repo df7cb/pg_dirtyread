@@ -29,9 +29,9 @@ SELECT CASE WHEN tableoid >= 0 THEN 0 END AS tableoid,
 	ctid,
 	CASE WHEN xmin::text::int >= 0 THEN 0 END AS xmin,
 	CASE WHEN xmax::text <> '0' THEN xmax::text::int - xmin::text::int END AS xmax,
-	cmin, cmax, dead, oid, bar, baz
+	cmin, cmax, dead, bar, baz
 	FROM pg_dirtyread('foo')
-	AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean, oid oid, bar bigint, baz text);
+	AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean, bar bigint, baz text);
 
 -- error cases
 SELECT pg_dirtyread('foo');
@@ -45,7 +45,6 @@ SELECT * FROM pg_dirtyread('foo') as t(xmax bigint);
 SELECT * FROM pg_dirtyread('foo') as t(cmin bigint);
 SELECT * FROM pg_dirtyread('foo') as t(cmax bigint);
 SELECT * FROM pg_dirtyread('foo') as t(dead bigint);
-SELECT * FROM pg_dirtyread('foo') as t(oid bigint);
 
 SET ROLE luser;
 SELECT * FROM pg_dirtyread('foo') as t(bar bigint, baz text);

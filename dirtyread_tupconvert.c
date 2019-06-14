@@ -9,7 +9,7 @@
  * executor's "junkfilter" routines, but these functions work on bare
  * HeapTuples rather than TupleTableSlots.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -28,7 +28,11 @@
 #include "access/xlog.h" /* RecoveryInProgress */
 #include "catalog/pg_type.h" /* *OID */
 #include "utils/builtins.h"
+#if PG_VERSION_NUM >= 120000
+#include "access/heapam.h"
+#else
 #include "utils/tqual.h" /* HeapTupleIsSurelyDead */
+#endif
 
 #include "dirtyread_tupconvert.h"
 
@@ -94,8 +98,11 @@ dirtyread_convert_tuples_by_name(TupleDesc indesc,
 	 * add/remove space for that.  (For some callers, presence or absence of
 	 * an OID column perhaps would not really matter, but let's be safe.)
 	 */
-	if (indesc->natts == outdesc->natts &&
-		indesc->tdhasoid == outdesc->tdhasoid)
+	if (indesc->natts == outdesc->natts
+#if PG_VERSION_NUM < 120000
+			&& indesc->tdhasoid == outdesc->tdhasoid
+#endif
+			)
 	{
 		same = true;
 		for (i = 0; i < n; i++)
@@ -158,7 +165,9 @@ static const struct system_columns_t {
 	int			attnum;
 } system_columns[] = {
 	{ "ctid",     TIDOID,  -1, SelfItemPointerAttributeNumber },
+#if PG_VERSION_NUM < 120000
 	{ "oid",      OIDOID,  -1, ObjectIdAttributeNumber },
+#endif
 	{ "xmin",     XIDOID,  -1, MinTransactionIdAttributeNumber },
 	{ "cmin",     CIDOID,  -1, MinCommandIdAttributeNumber },
 	{ "xmax",     XIDOID,  -1, MaxTransactionIdAttributeNumber },

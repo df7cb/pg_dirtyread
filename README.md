@@ -91,34 +91,36 @@ System columns such as `xmax` and `ctid` can be retrieved by including them in
 the table alias attached to the `pg_dirtyread()` call. A special column `dead` of
 type boolean is available to report dead rows (as by `HeapTupleIsSurelyDead`).
 The `dead` column is not usable during recovery, i.e. most notably not on
-standby servers.
+standby servers. The `oid` column is only available in PostgreSQL version 11
+and earlier.
 
   ```sql
     SELECT * FROM pg_dirtyread('foo')
         AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean,
-             oid oid, bar bigint, baz text);
-     tableoid │ ctid  │ xmin │ xmax │ cmin │ cmax │ dead │ oid │ bar │        baz
-    ──────────┼───────┼──────┼──────┼──────┼──────┼──────┼─────┼─────┼───────────────────
-        41823 │ (0,1) │ 1484 │ 1485 │    0 │    0 │ t    │   0 │   1 │ Delete
-        41823 │ (0,2) │ 1484 │    0 │    0 │    0 │ f    │   0 │   2 │ Insert
-        41823 │ (0,3) │ 1484 │ 1486 │    0 │    0 │ t    │   0 │   3 │ Update
-        41823 │ (0,4) │ 1484 │ 1488 │    0 │    0 │ f    │   0 │   4 │ Not deleted
-        41823 │ (0,5) │ 1484 │ 1489 │    1 │    1 │ f    │   0 │   5 │ Not updated
-        41823 │ (0,6) │ 1486 │    0 │    0 │    0 │ f    │   0 │   3 │ Updated
-        41823 │ (0,7) │ 1489 │    0 │    1 │    1 │ t    │   0 │   5 │ Not quite updated
-        41823 │ (0,8) │ 1490 │    0 │    2 │    2 │ t    │   0 │   6 │ Not inserted
+             bar bigint, baz text);
+     tableoid │ ctid  │ xmin │ xmax │ cmin │ cmax │ dead │ bar │        baz
+    ──────────┼───────┼──────┼──────┼──────┼──────┼──────┼─────┼───────────────────
+        41823 │ (0,1) │ 1484 │ 1485 │    0 │    0 │ t    │   1 │ Delete
+        41823 │ (0,2) │ 1484 │    0 │    0 │    0 │ f    │   2 │ Insert
+        41823 │ (0,3) │ 1484 │ 1486 │    0 │    0 │ t    │   3 │ Update
+        41823 │ (0,4) │ 1484 │ 1488 │    0 │    0 │ f    │   4 │ Not deleted
+        41823 │ (0,5) │ 1484 │ 1489 │    1 │    1 │ f    │   5 │ Not updated
+        41823 │ (0,6) │ 1486 │    0 │    0 │    0 │ f    │   3 │ Updated
+        41823 │ (0,7) │ 1489 │    0 │    1 │    1 │ t    │   5 │ Not quite updated
+        41823 │ (0,8) │ 1490 │    0 │    2 │    2 │ t    │   6 │ Not inserted
   ```
 
 Authors
 -------
 
 pg_dirtyread 1.0 was written by Phil Sorber in 2012. Christoph Berg added the
-ability to retrieve system columns in version 1.1, released 2017.
+ability to retrieve system columns in version 1.1, released 2017, and took over
+further maintenance.
 
 License
 -------
 
-Copyright (c) 1996-2018, PostgreSQL Global Development Group
+Copyright (c) 1996-2019, PostgreSQL Global Development Group
 
 Copyright (c) 2012, OmniTI Computer Consulting, Inc.
 

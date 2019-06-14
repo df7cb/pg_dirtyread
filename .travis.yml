@@ -9,44 +9,30 @@ env:
   - PG_SUPPORTED_VERSIONS=9.6
   - PG_SUPPORTED_VERSIONS=10
   - PG_SUPPORTED_VERSIONS=11
+  - PG_SUPPORTED_VERSIONS=12 COMPONENT=12
 
 language: C
-dist: trusty
+dist: xenial
 sudo: required
 
 before_install:
   # apt.postgresql.org is already configured, we just need to add devel
   - |
-    DIST=trusty-pgdg
-    case $PG_SUPPORTED_VERSIONS in
-      1*)
-      # update pgdg-source.list
-      sudo sed -i -e "s/pgdg.*/pgdg-testing main $PG_SUPPORTED_VERSIONS/" /etc/apt/sources.list.d/pgdg*.list
-      DIST=trusty-pgdg-testing
-      ;;
-    esac
+    if [ "$COMPONENT" ]; then
+      sudo sed -i -e "s/main/main $COMPONENT/" /etc/apt/sources.list.d/pgdg*.list
+    fi
   - sudo apt-get -qq update
 
 install:
   - export DEBIAN_FRONTEND=noninteractive # suppress warnings about deprecated PostgreSQL versions
-  # trusty's pg_buildext doesn't cope with PG version numbers >= 10, so upgrade that to -pgdg
-  - sudo apt-get install debhelper devscripts fakeroot postgresql-server-dev-$PG_SUPPORTED_VERSIONS postgresql-server-dev-all/$DIST
-  # install PostgreSQL $PG_SUPPORTED_VERSIONS if not there yet
-  - |
-    if [ ! -x /usr/lib/postgresql/$PG_SUPPORTED_VERSIONS/bin/postgres ]; then
-      sudo apt-get install postgresql-common # upgrade pg-common first ...
-      sudo /etc/init.d/postgresql stop # ... so we can stop postgresql again before installing the server
-      sudo apt-get install postgresql-$PG_SUPPORTED_VERSIONS
-    fi
-  # stop the travis-provided cluster
-  - sudo /etc/init.d/postgresql stop
+  - sudo apt-get purge -y postgresql-client-common
+  - sudo apt-get install -y debhelper fakeroot postgresql-$PG_SUPPORTED_VERSIONS postgresql-contrib-$PG_SUPPORTED_VERSIONS postgresql-server-dev-$PG_SUPPORTED_VERSIONS postgresql-server-dev-all
   - pg_lsclusters
   - dpkg -l postgresql\* | cat
 
 script:
-  - echo 1.0 > debian/source/format
   - pg_buildext updatecontrol
-  - dpkg-buildpackage -us -uc -rfakeroot
+  - dpkg-buildpackage -us -uc -rfakeroot -b
   - for deb in ../*.deb; do echo "$deb:"; dpkg-deb --info $deb; dpkg-deb --contents $deb; done
-  - sudo debi
+  - sudo dpkg -i ../*.deb
   - pg_buildext -i '--locale=C.UTF-8' installcheck

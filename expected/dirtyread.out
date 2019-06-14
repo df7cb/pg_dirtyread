@@ -55,19 +55,19 @@ SELECT CASE WHEN tableoid >= 0 THEN 0 END AS tableoid,
 	ctid,
 	CASE WHEN xmin::text::int >= 0 THEN 0 END AS xmin,
 	CASE WHEN xmax::text <> '0' THEN xmax::text::int - xmin::text::int END AS xmax,
-	cmin, cmax, dead, oid, bar, baz
+	cmin, cmax, dead, bar, baz
 	FROM pg_dirtyread('foo')
-	AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean, oid oid, bar bigint, baz text);
- tableoid | ctid  | xmin | xmax | cmin | cmax | dead | oid | bar |        baz        
-----------+-------+------+------+------+------+------+-----+-----+-------------------
-        0 | (0,1) |    0 |    1 |    0 |    0 | t    |   0 |   1 | Delete
-        0 | (0,2) |    0 |      |    0 |    0 | f    |   0 |   2 | Insert
-        0 | (0,3) |    0 |    2 |    0 |    0 | t    |   0 |   3 | Update
-        0 | (0,4) |    0 |    3 |    0 |    0 | f    |   0 |   4 | Not deleted
-        0 | (0,5) |    0 |    3 |    1 |    1 | f    |   0 |   5 | Not updated
-        0 | (0,6) |    0 |      |    0 |    0 | f    |   0 |   3 | Updated
-        0 | (0,7) |    0 |      |    1 |    1 | t    |   0 |   5 | Not quite updated
-        0 | (0,8) |    0 |      |    2 |    2 | t    |   0 |   6 | Not inserted
+	AS t(tableoid oid, ctid tid, xmin xid, xmax xid, cmin cid, cmax cid, dead boolean, bar bigint, baz text);
+ tableoid | ctid  | xmin | xmax | cmin | cmax | dead | bar |        baz        
+----------+-------+------+------+------+------+------+-----+-------------------
+        0 | (0,1) |    0 |    1 |    0 |    0 | t    |   1 | Delete
+        0 | (0,2) |    0 |      |    0 |    0 | f    |   2 | Insert
+        0 | (0,3) |    0 |    2 |    0 |    0 | t    |   3 | Update
+        0 | (0,4) |    0 |    3 |    0 |    0 | f    |   4 | Not deleted
+        0 | (0,5) |    0 |    3 |    1 |    1 | f    |   5 | Not updated
+        0 | (0,6) |    0 |      |    0 |    0 | f    |   3 | Updated
+        0 | (0,7) |    0 |      |    1 |    1 | t    |   5 | Not quite updated
+        0 | (0,8) |    0 |      |    2 |    2 | t    |   6 | Not inserted
 (8 rows)
 
 -- error cases
@@ -102,9 +102,6 @@ DETAIL:  Attribute "cmax" has type cid in corresponding attribute of type foo.
 SELECT * FROM pg_dirtyread('foo') as t(dead bigint);
 ERROR:  Error converting tuple descriptors!
 DETAIL:  Attribute "dead" has type boolean in corresponding attribute of type foo.
-SELECT * FROM pg_dirtyread('foo') as t(oid bigint);
-ERROR:  Error converting tuple descriptors!
-DETAIL:  Attribute "oid" has type oid in corresponding attribute of type foo.
 SET ROLE luser;
 SELECT * FROM pg_dirtyread('foo') as t(bar bigint, baz text);
 ERROR:  must be superuser to use pg_dirtyread

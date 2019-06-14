@@ -1,0 +1,24 @@
+-- test oid columns (removed in PostgreSQL 12)
+SELECT setting::int >= 120000 AS is_pg_12 FROM pg_settings WHERE name = 'server_version_num';
+ is_pg_12 
+----------
+ f
+(1 row)
+
+SELECT * FROM pg_dirtyread('foo') AS t(oid oid, bar bigint, baz text);
+ oid | bar |        baz        
+-----+-----+-------------------
+   0 |   1 | Delete
+   0 |   2 | Insert
+   0 |   3 | Update
+   0 |   4 | Not deleted
+   0 |   5 | Not updated
+   0 |   3 | Updated
+   0 |   5 | Not quite updated
+   0 |   6 | Not inserted
+(8 rows)
+
+-- error cases
+SELECT * FROM pg_dirtyread('foo') as t(oid bigint);
+ERROR:  Error converting tuple descriptors!
+DETAIL:  Attribute "oid" has type oid in corresponding attribute of type foo.

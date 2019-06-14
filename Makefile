@@ -5,7 +5,7 @@ EXTENSION = pg_dirtyread
 DATA = pg_dirtyread--1.0.sql \
 	   pg_dirtyread--1.0--2.sql pg_dirtyread--2.sql
 
-REGRESS = extension dirtyread
+REGRESS = extension dirtyread oid
 
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
