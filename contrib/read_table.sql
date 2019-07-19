@@ -43,7 +43,7 @@ $$ language plpgsql;
 
 -- return ctids of all tuples in a table that trigger an error
 create or replace function bad_tuples(relname regclass)
-returns table (ctid tid, sql_state text, error text)
+returns table (ctid tid, sqlstate text, sqlerrm text)
 as $$
 declare
   pages int;
@@ -68,8 +68,8 @@ begin
       exception
         when others then
           ctid := format('(%s,%s)', page, item);
-          get stacked diagnostics sql_state := RETURNED_SQLSTATE;
-          get stacked diagnostics error := MESSAGE_TEXT;
+          bad_tuples.sqlstate := sqlstate;
+          bad_tuples.sqlerrm := sqlerrm;
           return next;
       end;
 
