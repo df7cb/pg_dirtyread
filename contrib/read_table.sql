@@ -40,3 +40,44 @@ begin
   end loop;
 end;
 $$ language plpgsql;
+
+-- return ctids of all tuples in a table that trigger an error
+create or replace function bad_tuples(relname regclass)
+returns table (ctid tid, sql_state text, error text)
+as $$
+declare
+  pages int;
+  page int := 0;
+  item int;
+  r record;
+begin
+  SELECT pg_relation_size(relname) / current_setting('block_size')::int INTO pages;
+
+  <<pageloop>>
+  while page < pages loop
+    item := 1;
+
+    <<itemloop>>
+    while true loop
+
+      begin
+        execute format('SELECT * FROM %I WHERE ctid=''(%s,%s)'' ', relname, page, item) into r;
+        if r is null then
+          exit itemloop;
+        end if;
+      exception
+        when others then
+          ctid := format('(%s,%s)', page, item);
+          get stacked diagnostics sql_state := RETURNED_SQLSTATE;
+          get stacked diagnostics error := MESSAGE_TEXT;
+          return next;
+      end;
+
+      item := item + 1;
+    end loop;
+
+    page := page + 1;
+  end loop;
+end;
+$$ language plpgsql;
+
