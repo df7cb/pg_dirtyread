@@ -12,6 +12,7 @@ env:
   - PG_SUPPORTED_VERSIONS=12 COMPONENT=12
 
 language: C
+# we stay on xenial for now because bionic doesn't have PG9.2
 dist: xenial
 sudo: required
 
