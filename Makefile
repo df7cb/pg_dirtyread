@@ -7,7 +7,9 @@ DATA = pg_dirtyread--1.0.sql \
 
 REGRESS = extension dirtyread oid
 
-PG_CONFIG = pg_config
+ifndef PG_CONFIG
+	PG_CONFIG = pg_config
+endif
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
 
