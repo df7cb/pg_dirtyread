@@ -23,7 +23,8 @@ package management system such as RPM to install PostgreSQL, be sure that the
 `-devel` package is also installed. If necessary tell the build process where
 to find it:
 
-    env PG_CONFIG=/path/to/pg_config make && make install
+    make PG_CONFIG=/path/to/pg_config
+    make install PG_CONFIG=/path/to/pg_config
 
 Loading and Using
 -------
