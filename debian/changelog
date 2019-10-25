@@ -1,3 +1,14 @@
+pg-dirtyread (2.2-1) unstable; urgency=medium
+
+  * New upstream version, upload for PostgreSQL 12.
+    + regress: Try reading from an index.
+    + Contrib: Add function to read all good tuples from a table, skipping
+      over all tuples that trigger an error, add function to return ctids of
+      all tuples in a table that trigger an error.
+    + README: Fix instructions on setting PG_CONFIG.
+
+ -- Christoph Berg <myon@debian.org>  Fri, 25 Oct 2019 13:18:47 +0200
+
 pg-dirtyread (2.1-1) unstable; urgency=medium
 
   * Support PostgreSQL 12.
