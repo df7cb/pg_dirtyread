@@ -17,7 +17,7 @@ begin
 
       for ctid in select t_ctid from heap_page_items(get_raw_page(relname::text, page)) loop
         begin
-          execute format('SELECT length(t::text) FROM %I t WHERE ctid=%L', relname, ctid);
+          execute format('SELECT length(t::text) FROM %s t WHERE ctid=%L', relname, ctid);
         exception -- bad tuple
           when others then
             bad_tuples.page := page;

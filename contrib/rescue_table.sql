@@ -16,7 +16,7 @@ begin
     savename := relname || '_rescue';
   end if;
   if rescue_table.create then
-    execute format('CREATE TABLE %I (LIKE %I)', savename, relname);
+    execute format('CREATE TABLE %s (LIKE %s)', savename, relname);
   end if;
 
   select pg_relation_size(relname) / current_setting('block_size')::int into pages;
@@ -30,7 +30,7 @@ begin
 
       for ctid in select t_ctid from heap_page_items(get_raw_page(relname::text, page)) loop
         begin
-          execute format('INSERT INTO %I SELECT * FROM %I WHERE ctid=%L', savename, relname, ctid);
+          execute format('INSERT INTO %s SELECT * FROM %s WHERE ctid=%L', savename, relname, ctid);
           get diagnostics row_count = ROW_COUNT;
           good_tuples := good_tuples + row_count;
         exception -- bad tuple
@@ -52,7 +52,7 @@ begin
 
   end loop;
 
-  error := format('rescue_table %I into %I: %s of %s pages are bad, %s bad tuples, %s tuples copied',
+  error := format('rescue_table %s into %s: %s of %s pages are bad, %s bad tuples, %s tuples copied',
     relname, savename, bad_pages, pages, bad_tuples, good_tuples);
   raise log '%', error;
   return error;

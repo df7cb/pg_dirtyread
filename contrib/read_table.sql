@@ -17,7 +17,7 @@ begin
 
       for ctid in select t_ctid from heap_page_items(get_raw_page(relname::text, page)) loop
         begin
-          execute format('SELECT * FROM %I WHERE ctid=%L', relname, ctid) into r;
+          execute format('SELECT * FROM %s WHERE ctid=%L', relname, ctid) into r;
           if r is not null then
             return next r;
           end if;
