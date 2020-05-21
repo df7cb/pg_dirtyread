@@ -35,8 +35,8 @@
 
 #include "postgres.h"
 #include "funcapi.h"
-#if PG_VERSION_NUM >= 120000
 #include "access/heapam.h"
+#if PG_VERSION_NUM >= 120000
 #include "access/table.h"
 #include "utils/snapmgr.h"
 #else
