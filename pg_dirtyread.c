@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Copyright (c) 2012, OmniTI Computer Consulting, Inc.
  * Portions Copyright (c) 1994, The Regents of the University of California
  * All rights reserved.
@@ -97,7 +97,13 @@ pg_dirtyread(PG_FUNCTION_ARGS)
         funcctx = SRF_FIRSTCALL_INIT();
         oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
         usr_ctx = (pg_dirtyread_ctx *) palloc(sizeof(pg_dirtyread_ctx));
-        usr_ctx->rel = heap_open(relid, AccessShareLock);
+        usr_ctx->rel =
+#if PG_VERSION_NUM >= 120000
+                table_open
+#else
+                heap_open
+#endif
+                        (relid, AccessShareLock);
         usr_ctx->reltupdesc = RelationGetDescr(usr_ctx->rel);
         if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
             ereport(ERROR,
@@ -141,7 +147,12 @@ pg_dirtyread(PG_FUNCTION_ARGS)
     else
     {
         heap_endscan(usr_ctx->scan);
-        heap_close(usr_ctx->rel, AccessShareLock);
+#if PG_VERSION_NUM >= 120000
+        table_close
+#else
+        heap_close
+#endif
+                (usr_ctx->rel, AccessShareLock);
         SRF_RETURN_DONE(funcctx);
     }
 }
