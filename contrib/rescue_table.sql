@@ -1,4 +1,4 @@
-create or replace function rescue_table(relname regclass, savename name default null, "create" boolean default true)
+create or replace function rescue_table(relname regclass, savename name default null, "create" boolean default true, start_block int default 0, end_block int default null)
 returns text
 as $$
 declare
@@ -20,8 +20,11 @@ begin
   end if;
 
   select pg_relation_size(relname) / current_setting('block_size')::int into pages;
+  if end_block is null or end_block > pages-1 then
+    end_block := pages-1;
+  end if;
 
-  for page in 0 .. pages-1 loop
+  for page in start_block .. end_block loop
     if page % 10000 = 0 then
       raise notice '%: page % of %', relname, page, pages;
     end if;
