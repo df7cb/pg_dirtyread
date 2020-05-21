@@ -99,11 +99,10 @@ pg_dirtyread(PG_FUNCTION_ARGS)
         usr_ctx = (pg_dirtyread_ctx *) palloc(sizeof(pg_dirtyread_ctx));
         usr_ctx->rel =
 #if PG_VERSION_NUM >= 120000
-                table_open
+                table_open(relid, AccessShareLock);
 #else
-                heap_open
+                heap_open(relid, AccessShareLock);
 #endif
-                        (relid, AccessShareLock);
         usr_ctx->reltupdesc = RelationGetDescr(usr_ctx->rel);
         if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
             ereport(ERROR,
@@ -148,11 +147,10 @@ pg_dirtyread(PG_FUNCTION_ARGS)
     {
         heap_endscan(usr_ctx->scan);
 #if PG_VERSION_NUM >= 120000
-        table_close
+        table_close(usr_ctx->rel, AccessShareLock);
 #else
-        heap_close
+        heap_close(usr_ctx->rel, AccessShareLock);
 #endif
-                (usr_ctx->rel, AccessShareLock);
         SRF_RETURN_DONE(funcctx);
     }
 }
