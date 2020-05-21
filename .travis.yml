@@ -9,31 +9,24 @@ env:
   - PG_SUPPORTED_VERSIONS=9.6
   - PG_SUPPORTED_VERSIONS=10
   - PG_SUPPORTED_VERSIONS=11
-  - PG_SUPPORTED_VERSIONS=12 COMPONENT=12
+  - PG_SUPPORTED_VERSIONS=12
+  - PG_SUPPORTED_VERSIONS=13
 
-language: C
-# we stay on xenial for now because bionic doesn't have PG9.2
-dist: xenial
-sudo: required
+language: c
+os: linux
+dist: focal
 
 before_install:
-  # apt.postgresql.org is already configured, we just need to add devel
-  - |
-    if [ "$COMPONENT" ]; then
-      sudo sed -i -e "s/main/main $COMPONENT/" /etc/apt/sources.list.d/pgdg*.list
-    fi
+  # travis' postgresql-common is missing apt.postgresql.org.sh (2020-05-21)
   - sudo apt-get -qq update
+  - sudo apt-get -y install postgresql-common
 
 install:
-  - export DEBIAN_FRONTEND=noninteractive # suppress warnings about deprecated PostgreSQL versions
-  - sudo apt-get purge -y postgresql-client-common
-  - sudo apt-get install -y debhelper fakeroot postgresql-$PG_SUPPORTED_VERSIONS postgresql-contrib-$PG_SUPPORTED_VERSIONS postgresql-server-dev-$PG_SUPPORTED_VERSIONS postgresql-server-dev-all
-  - pg_lsclusters
-  - dpkg -l postgresql\* | cat
+  - sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -p -v $PG_SUPPORTED_VERSIONS -i
+  - sudo -u postgres createuser --superuser $USER
 
 script:
-  - pg_buildext updatecontrol
-  - dpkg-buildpackage -us -uc -rfakeroot -b
-  - for deb in ../*.deb; do echo "$deb:"; dpkg-deb --info $deb; dpkg-deb --contents $deb; done
-  - sudo dpkg -i ../*.deb
-  - pg_buildext -i '--locale=C.UTF-8' installcheck
+  - make PROFILE="-Werror"
+  - sudo make install
+  - make installcheck
+  - if test -s regression.diffs; then cat regression.diffs; fi
