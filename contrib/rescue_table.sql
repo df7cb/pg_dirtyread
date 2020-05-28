@@ -46,6 +46,10 @@ begin
       end loop;
 
     exception -- bad page
+      when undefined_function then
+        raise exception undefined_function
+          using message = SQLERRM,
+                hint = 'Use CREATE EXTENSION pageinspect; to create it';
       when others then
         get stacked diagnostics sql_state := RETURNED_SQLSTATE;
         get stacked diagnostics error := MESSAGE_TEXT;
@@ -62,5 +66,5 @@ begin
 end;
 $$ language plpgsql;
 
-comment on function rescue_table(regclass, name, boolean) is
+comment on function rescue_table(regclass, name, boolean, int, int) is
   'copy all good tuples from a table to another one';

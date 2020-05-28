@@ -29,6 +29,10 @@ begin
       end loop;
 
     exception -- bad page
+      when undefined_function then
+        raise exception undefined_function
+          using message = SQLERRM,
+                hint = 'Use CREATE EXTENSION pageinspect; to create it';
       when others then
         bad_tuples.page := page;
         bad_tuples.sqlstate := sqlstate;

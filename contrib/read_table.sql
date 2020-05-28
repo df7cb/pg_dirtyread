@@ -30,6 +30,10 @@ begin
       end loop;
 
     exception -- bad page
+      when undefined_function then
+        raise exception undefined_function
+          using message = SQLERRM,
+                hint = 'Use CREATE EXTENSION pageinspect; to create it';
       when others then
         get stacked diagnostics sql_state := RETURNED_SQLSTATE;
         get stacked diagnostics error := MESSAGE_TEXT;
