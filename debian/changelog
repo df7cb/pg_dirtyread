@@ -1,3 +1,13 @@
+pg-dirtyread (2.3-2) unstable; urgency=medium
+
+  * Upload for PostgreSQL 13.
+  * Use dh --with pgxs.
+  * R³: no.
+  * DH 13.
+  * debian/tests: Use 'make' instead of postgresql-server-dev-all.
+
+ -- Christoph Berg <myon@debian.org>  Mon, 19 Oct 2020 11:11:52 +0200
+
 pg-dirtyread (2.3-1) unstable; urgency=medium
 
   * Support PostgreSQL 13.

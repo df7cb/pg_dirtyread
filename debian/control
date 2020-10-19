@@ -3,14 +3,15 @@ Section: database
 Priority: optional
 Maintainer: Debian PostgreSQL Maintainers <team+postgresql@tracker.debian.org>
 Uploaders: Christoph Berg <myon@debian.org>
-Build-Depends: debhelper (>= 9), postgresql-server-dev-all (>= 153~)
-Standards-Version: 4.3.0
+Build-Depends: debhelper-compat (= 13), postgresql-all (>= 217~)
+Standards-Version: 4.5.0
+Rules-Requires-Root: no
 Vcs-Browser: https://github.com/ChristophBerg/pg_dirtyread
 Vcs-Git: https://github.com/ChristophBerg/pg_dirtyread.git
 
-Package: postgresql-12-dirtyread
+Package: postgresql-13-dirtyread
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}, postgresql-12
+Depends: ${misc:Depends}, ${shlibs:Depends}, postgresql-13
 Description: Read dead but unvacuumed tuples from a PostgreSQL relation
  The pg_dirtyread extension provides the ability to read dead but unvacuumed
  rows from a PostgreSQL relation.
