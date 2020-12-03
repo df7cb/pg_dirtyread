@@ -16,6 +16,10 @@ language: c
 os: linux
 dist: focal
 
+arch:
+  - AMD64
+  - ppc64le
+
 before_install:
   # travis' postgresql-common is missing apt.postgresql.org.sh (2020-05-21)
   - sudo apt-get -qq update
