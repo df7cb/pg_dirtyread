@@ -69,6 +69,15 @@ typedef struct
 
 PG_MODULE_MAGIC;
 
+#ifdef _WIN32
+    /* Add a prototype marked PGDLLEXPORT */
+    PGDLLEXPORT Datum pg_dirtyread(PG_FUNCTION_ARGS);
+#endif
+#ifdef _WIN64
+    /* Add a prototype marked PGDLLEXPORT */
+    PGDLLEXPORT Datum pg_dirtyread(PG_FUNCTION_ARGS);
+#endif
+
 PG_FUNCTION_INFO_V1(pg_dirtyread);
 Datum pg_dirtyread(PG_FUNCTION_ARGS);
 
