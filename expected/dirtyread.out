@@ -75,6 +75,8 @@ SELECT pg_dirtyread('foo');
 ERROR:  function returning record called in context that cannot accept type record
 SELECT * FROM pg_dirtyread(0) as t(bar bigint, baz text);
 ERROR:  invalid relation oid "0"
+SELECT * FROM pg_dirtyread(NULL) as t(bar bigint, baz text);
+ERROR:  invalid relation oid "0"
 SELECT * FROM pg_dirtyread('foo') as t(bar int, baz text);
 ERROR:  Error converting tuple descriptors!
 DETAIL:  Attribute "bar" has type bigint in corresponding attribute of type foo.

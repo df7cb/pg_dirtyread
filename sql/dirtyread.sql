@@ -36,6 +36,7 @@ SELECT CASE WHEN tableoid >= 0 THEN 0 END AS tableoid,
 -- error cases
 SELECT pg_dirtyread('foo');
 SELECT * FROM pg_dirtyread(0) as t(bar bigint, baz text);
+SELECT * FROM pg_dirtyread(NULL) as t(bar bigint, baz text);
 SELECT * FROM pg_dirtyread('foo') as t(bar int, baz text);
 SELECT * FROM pg_dirtyread('foo') as t(moo bigint);
 SELECT * FROM pg_dirtyread('foo') as t(tableoid bigint);
