@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Copyright (c) 2012, OmniTI Computer Consulting, Inc.
  * Portions Copyright (c) 1994, The Regents of the University of California
  * All rights reserved.
@@ -70,7 +70,7 @@ typedef struct
 PG_MODULE_MAGIC;
 
 PG_FUNCTION_INFO_V1(pg_dirtyread);
-Datum pg_dirtyread(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum pg_dirtyread(PG_FUNCTION_ARGS);
 
 Datum
 pg_dirtyread(PG_FUNCTION_ARGS)
