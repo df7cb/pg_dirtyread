@@ -1,3 +1,9 @@
+pg-dirtyread (2.3-3) UNRELEASED; urgency=medium
+
+  * Update package URLs.
+
+ -- Christoph Berg <myon@debian.org>  Tue, 31 Aug 2021 17:16:30 +0200
+
 pg-dirtyread (2.3-2) unstable; urgency=medium
 
   * Upload for PostgreSQL 13.

@@ -6,8 +6,8 @@ Uploaders: Christoph Berg <myon@debian.org>
 Build-Depends: debhelper-compat (= 13), postgresql-all (>= 217~)
 Standards-Version: 4.5.0
 Rules-Requires-Root: no
-Vcs-Browser: https://github.com/ChristophBerg/pg_dirtyread
-Vcs-Git: https://github.com/ChristophBerg/pg_dirtyread.git
+Vcs-Browser: https://github.com/df7cb/pg_dirtyread
+Vcs-Git: https://github.com/df7cb/pg_dirtyread.git
 
 Package: postgresql-13-dirtyread
 Architecture: any
