@@ -1,5 +1,9 @@
 /*-------------------------------------------------------------------------
  *
+ * Copy of PostgreSQL 11's tupconvert.c for use by pg_dirtyread. The difference
+ * is added support for system columns like xmin/xmax/oid. PostgreSQL 14
+ * refactored it a lot, but the PG 11 version still works, so we stick with it.
+ *
  * tupconvert.c
  *	  Tuple conversion support.
  *
@@ -145,7 +149,14 @@ dirtyread_convert_tuples_by_name(TupleDesc indesc,
 	map = (TupleConversionMap *) palloc(sizeof(TupleConversionMap));
 	map->indesc = indesc;
 	map->outdesc = outdesc;
+#if PG_VERSION_NUM >= 140000
+	/* TupleConversionMap->attrMap changed in PG14; luckily our old data structure is just a member of that */
+	map->attrMap = (AttrMap *) palloc(sizeof(AttrMap));
+	map->attrMap->attnums = attrMap;
+	map->attrMap->maplen = n;
+#else
 	map->attrMap = attrMap;
+#endif
 	/* preallocate workspace for Datum arrays */
 	map->outvalues = (Datum *) palloc(n * sizeof(Datum));
 	map->outisnull = (bool *) palloc(n * sizeof(bool));
@@ -321,9 +332,14 @@ dirtyread_convert_tuples_by_name_map(TupleDesc indesc,
  * Perform conversion of a tuple according to the map.
  */
 HeapTuple
-dirtyread_do_convert_tuple(HeapTuple tuple, TupleConversionMap *map, TransactionId oldest_xmin)
+dirtyread_do_convert_tuple(HeapTuple tuple, TupleConversionMap *map, OldestXminType oldest_xmin)
 {
-	AttrNumber *attrMap = map->attrMap;
+	AttrNumber *attrMap =
+#if PG_VERSION_NUM >= 140000
+		map->attrMap->attnums;
+#else
+		map->attrMap;
+#endif
 	Datum	   *invalues = map->invalues;
 	bool	   *inisnull = map->inisnull;
 	Datum	   *outvalues = map->outvalues;

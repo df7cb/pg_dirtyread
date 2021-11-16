@@ -15,6 +15,13 @@
 #define DIRTYREAD_TUPCONVERT_H
 
 #include "access/tupconvert.h"
+#include "utils/snapmgr.h"
+
+#if PG_VERSION_NUM >= 140000
+#define OldestXminType GlobalVisState *
+#else
+#define OldestXminType TransactionId
+#endif
 
 extern TupleConversionMap *dirtyread_convert_tuples_by_name(TupleDesc indesc,
 					   TupleDesc outdesc,
@@ -24,7 +31,7 @@ extern AttrNumber *dirtyread_convert_tuples_by_name_map(TupleDesc indesc,
 						   TupleDesc outdesc,
 						   const char *msg);
 
-extern HeapTuple dirtyread_do_convert_tuple(HeapTuple tuple, TupleConversionMap *map, TransactionId oldest_xmin);
+extern HeapTuple dirtyread_do_convert_tuple(HeapTuple tuple, TupleConversionMap *map, OldestXminType oldest_xmin);
 
 #define DeadFakeAttributeNumber FirstLowInvalidHeapAttributeNumber
 

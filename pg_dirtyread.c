@@ -64,7 +64,7 @@ typedef struct
 #else
     HeapScanDesc        scan;
 #endif
-    TransactionId       oldest_xmin;
+    OldestXminType      oldest_xmin;
 } pg_dirtyread_ctx;
 
 PG_MODULE_MAGIC;
@@ -117,6 +117,10 @@ pg_dirtyread(PG_FUNCTION_ARGS)
                 , NULL, 0
 #endif
                 );
+
+#if PG_VERSION_NUM >= 140000
+        usr_ctx->oldest_xmin = GlobalVisTestFor(usr_ctx->rel);
+#else
         /* only call GetOldestXmin while not in recovery */
         if (!RecoveryInProgress())
             usr_ctx->oldest_xmin = GetOldestXmin(
@@ -126,6 +130,7 @@ pg_dirtyread(PG_FUNCTION_ARGS)
                 false /* allDbs */
 #endif
                 , 0);
+#endif
         funcctx->user_fctx = (void *) usr_ctx;
         MemoryContextSwitchTo(oldcontext);
     }
