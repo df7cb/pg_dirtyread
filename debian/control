@@ -9,9 +9,9 @@ Rules-Requires-Root: no
 Vcs-Browser: https://github.com/df7cb/pg_dirtyread
 Vcs-Git: https://github.com/df7cb/pg_dirtyread.git
 
-Package: postgresql-13-dirtyread
+Package: postgresql-14-dirtyread
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}, postgresql-13
+Depends: ${misc:Depends}, ${shlibs:Depends}, postgresql-14
 Description: Read dead but unvacuumed tuples from a PostgreSQL relation
  The pg_dirtyread extension provides the ability to read dead but unvacuumed
  rows from a PostgreSQL relation.

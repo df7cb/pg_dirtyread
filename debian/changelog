@@ -1,8 +1,9 @@
-pg-dirtyread (2.3-3) UNRELEASED; urgency=medium
+pg-dirtyread (2.4-1) unstable; urgency=medium
 
+  * New upstream version with support for PostgreSQL 14.
   * Update package URLs.
 
- -- Christoph Berg <myon@debian.org>  Tue, 31 Aug 2021 17:16:30 +0200
+ -- Christoph Berg <myon@debian.org>  Tue, 16 Nov 2021 19:07:15 +0100
 
 pg-dirtyread (2.3-2) unstable; urgency=medium
 
