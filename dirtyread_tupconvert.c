@@ -149,8 +149,8 @@ dirtyread_convert_tuples_by_name(TupleDesc indesc,
 	map = (TupleConversionMap *) palloc(sizeof(TupleConversionMap));
 	map->indesc = indesc;
 	map->outdesc = outdesc;
-#if PG_VERSION_NUM >= 140000
-	/* TupleConversionMap->attrMap changed in PG14; luckily our old data structure is just a member of that */
+#if PG_VERSION_NUM >= 130000
+	/* TupleConversionMap->attrMap changed in PG13; luckily our old data structure is just a member of that */
 	map->attrMap = (AttrMap *) palloc(sizeof(AttrMap));
 	map->attrMap->attnums = attrMap;
 	map->attrMap->maplen = n;
@@ -335,7 +335,7 @@ HeapTuple
 dirtyread_do_convert_tuple(HeapTuple tuple, TupleConversionMap *map, OldestXminType oldest_xmin)
 {
 	AttrNumber *attrMap =
-#if PG_VERSION_NUM >= 140000
+#if PG_VERSION_NUM >= 130000
 		map->attrMap->attnums;
 #else
 		map->attrMap;
