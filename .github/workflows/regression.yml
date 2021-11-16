@@ -1,6 +1,10 @@
 name: Build
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '42 10 10 * *' # Monthly
 
 jobs:
   build:
@@ -12,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        pgversion:  [ 9.2, 9.3, 9.4, 9.5, 9.6, 10, 11, 12, 13, 14 ]
+        pgversion:  [ 9.2, 9.3, 9.4, 9.5, 9.6, 10, 11, 12, 13, 14, 15 ]
 
     env:
       PGVERSION: ${{ matrix.pgversion }}
