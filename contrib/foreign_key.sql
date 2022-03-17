@@ -49,7 +49,7 @@ begin
   return;
 end$$;
 
-comment on function check_unique_index is 'Check FOREIGN KEY for missing rows';
+comment on function check_foreign_key is 'Check FOREIGN KEY for missing rows';
 
 /* Suggested usage:
 \x
