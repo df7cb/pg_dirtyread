@@ -1,8 +1,9 @@
-create or replace function check_foreign_key(con_name name, max_missing bigint default 100, missing out text)
+create or replace function check_foreign_key(con_oid oid, max_missing bigint default 100, missing out text)
   returns setof text
   language plpgsql
 as $$-- Author: Christoph Berg
 declare
+  con_name text;
   def text;
   rel text; relcols text; -- referencing table
   frel text; frelcols text; -- referenced table
@@ -10,8 +11,8 @@ declare
   query text;
   missing_count bigint default 0;
 begin
-  select into strict def, rel, relcols, frel, frelcols, fkpred
-    pg_get_constraintdef(oid, true),
+  select into strict con_name, def, rel, relcols, frel, frelcols, fkpred
+    conname, pg_get_constraintdef(oid, true),
     conrelid::regclass, relcolumns,
     confrelid::regclass, frelcolumns,
     fkpredicate
@@ -26,7 +27,7 @@ begin
       lateral
       (select attname from pg_attribute where attrelid = confrelid and attnum = confkey[u]) a2
     ) consub
-  where conname = con_name;
+  where oid = con_oid;
 
   raise notice 'FK % on %: %', con_name, rel, def;
 
@@ -54,5 +55,5 @@ comment on function check_foreign_key is 'Check FOREIGN KEY for missing rows';
 /* Suggested usage:
 \x
 \t
-select format('select * from check_foreign_key(%L)', conname) from pg_constraint where contype = 'f' \gexec
+select format('select * from check_foreign_key(%s)', oid) from pg_constraint where contype = 'f' \gexec
 */
