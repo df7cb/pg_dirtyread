@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996-2021, PostgreSQL Global Development Group
+ * Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Copyright (c) 2012, OmniTI Computer Consulting, Inc.
  * Portions Copyright (c) 1994, The Regents of the University of California
  * All rights reserved.

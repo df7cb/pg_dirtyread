@@ -1,3 +1,11 @@
+pg-dirtyread (2.5-1) unstable; urgency=medium
+
+  * Upload for PostgreSQL 15.
+  * New upstream version.
+  * debian/watch: Look at GitHub tags instead of releases.
+
+ -- Christoph Berg <myon@debian.org>  Fri, 21 Oct 2022 10:36:40 +0200
+
 pg-dirtyread (2.4-1) unstable; urgency=medium
 
   * New upstream version with support for PostgreSQL 14.

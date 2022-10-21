@@ -120,7 +120,7 @@ further maintenance.
 License
 -------
 
-Copyright (c) 1996-2021, PostgreSQL Global Development Group
+Copyright (c) 1996-2022, PostgreSQL Global Development Group
 
 Copyright (c) 2012, OmniTI Computer Consulting, Inc.
 
