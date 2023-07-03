@@ -1,0 +1,10 @@
+select setting::int >= 160000 as is_pg16 from pg_settings where name = 'server_version_num';
+ is_pg16 
+---------
+ t
+(1 row)
+
+CREATE INDEX ON foo(bar);
+SELECT * FROM pg_dirtyread('foo_bar_idx') as t(bar bigint);
+ERROR:  cannot open relation "foo_bar_idx"
+DETAIL:  This operation is not supported for indexes.

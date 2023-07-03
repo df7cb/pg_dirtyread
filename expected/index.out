@@ -1,0 +1,9 @@
+select setting::int >= 160000 as is_pg16 from pg_settings where name = 'server_version_num';
+ is_pg16 
+---------
+ f
+(1 row)
+
+CREATE INDEX ON foo(bar);
+SELECT * FROM pg_dirtyread('foo_bar_idx') as t(bar bigint);
+ERROR:  "foo_bar_idx" is an index

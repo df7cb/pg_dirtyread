@@ -51,9 +51,6 @@ SET ROLE luser;
 SELECT * FROM pg_dirtyread('foo') as t(bar bigint, baz text);
 RESET ROLE;
 
-CREATE INDEX ON foo(bar);
-SELECT * FROM pg_dirtyread('foo_bar_idx') as t(bar bigint);
-
 -- reading from dropped columns
 CREATE TABLE bar (
 	id int,
