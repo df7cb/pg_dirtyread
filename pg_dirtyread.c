@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996-2022, PostgreSQL Global Development Group
+ * Copyright (c) 1996-2024, PostgreSQL Global Development Group
  * Copyright (c) 2012, OmniTI Computer Consulting, Inc.
  * Portions Copyright (c) 1994, The Regents of the University of California
  * All rights reserved.
@@ -114,7 +114,7 @@ pg_dirtyread(PG_FUNCTION_ARGS)
                 funcctx->tuple_desc, "Error converting tuple descriptors!");
         usr_ctx->scan = heap_beginscan(usr_ctx->rel, SnapshotAny, 0, NULL
 #if PG_VERSION_NUM >= 120000
-                , NULL, 0
+                , NULL, SO_TYPE_SEQSCAN
 #endif
                 );
 
