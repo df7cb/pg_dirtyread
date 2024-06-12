@@ -1,3 +1,10 @@
+pg-dirtyread (2.7-1) unstable; urgency=medium
+
+  * Set SO_TYPE_SEQSCAN in heap_beginscan() to support PG17.
+  * Exercise toast in tests.
+
+ -- Christoph Berg <myon@debian.org>  Wed, 12 Jun 2024 18:03:05 +0200
+
 pg-dirtyread (2.6-2) unstable; urgency=medium
 
   * Upload for PostgreSQL 16.
