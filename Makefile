@@ -11,4 +11,9 @@ PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
 
+# toast test works on PG14+ only
+ifneq ($(filter-out 9.% 10 11 12 13,$(MAJORVERSION)),)
+  REGRESS += toast
+endif
+
 pg_dirtyread.o dirtyread_tupconvert.o: dirtyread_tupconvert.h
