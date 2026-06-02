@@ -1,3 +1,9 @@
+pg-dirtyread (2.8-1) unstable; urgency=medium
+
+  * Support PostgreSQL 19: default toast compression is lz4 now.
+
+ -- Christoph Berg <myon@debian.org>  Tue, 02 Jun 2026 23:21:16 +0200
+
 pg-dirtyread (2.7-3) unstable; urgency=medium
 
   * Upload for PostgreSQL 18. (Closes: #1117276)

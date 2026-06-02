@@ -3,6 +3,8 @@ create table toast (
     data text
 );
 
+set default_toast_compression = pglz;
+
 insert into toast values ('short inline', 'xxx');
 insert into toast values ('long inline uncompressed', repeat('x', 200));
 
